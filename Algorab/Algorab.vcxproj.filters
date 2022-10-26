@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\stb_image.h">
+    <ClInclude Include="src\stb_image\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\renderer\renderer.h">
@@ -26,7 +26,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\stb_image.cpp">
+    <ClCompile Include="src\stb_image\stb_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\camera.cpp">
