@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "model/model.h"
+#include "../model/model.h"
 
 class Entity {
 private:
@@ -14,15 +14,15 @@ public:
 
 class ModelEntity : public Entity {
 private:
-	Model model;
+	Model* model;
 	float scale;
 public:
-	ModelEntity(Model mod, glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), float scl = 1.0f);
+	ModelEntity(Model* mod, glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), float scl = 1.0f);
 
-	Model getModel();
+	Model* getModel();
 	float getScale();
 
-	void setModel(Model mod);
+	void setModel(Model* mod);
 	void setScale(float scl);
 };
 

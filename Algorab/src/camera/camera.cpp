@@ -47,11 +47,11 @@ float Camera::getFarPlane() {
 	return farPlane;
 }
 
-glm::mat4 Camera::getViewMatrix() {
-	return viewMatrix;
+glm::mat4* Camera::getViewMatrix() {
+	return &viewMatrix;
 }
-glm::mat4 Camera::getProjectionMatrix() {
-	return projectionMatrix;
+glm::mat4* Camera::getProjectionMatrix() {
+	return &projectionMatrix;
 }
 
 void Camera::setNearPlane(float near) {

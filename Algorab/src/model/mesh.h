@@ -43,7 +43,7 @@ public:
 	void setupMesh();
 
 	unsigned int getVertexArray();
-	std::vector<unsigned int> getIndices();
-	std::vector<Texture> getTextures();
+	std::vector<unsigned int>* getIndices();
+	std::vector<Texture>* getTextures();
 
 };

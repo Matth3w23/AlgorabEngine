@@ -29,6 +29,11 @@ Mesh::Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, g
 }
 
 void Mesh::setupMesh() {
+#ifdef _DEBUG
+	std::cout << "SETUPMESH" << std::endl;
+#endif // !_DEBUG
+
+	
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
@@ -77,12 +82,12 @@ unsigned int Mesh::getVertexArray() {
 	return VAO;
 }
 
-std::vector<unsigned int> Mesh::getIndices() {
-	return indices;
+std::vector<unsigned int>* Mesh::getIndices() {
+	return &indices;
 }
 
-std::vector<Texture> Mesh::getTextures() {
-	return textures;
+std::vector<Texture>* Mesh::getTextures() {
+	return &textures;
 }
 
 /*void Mesh::createDefaultMesh() {

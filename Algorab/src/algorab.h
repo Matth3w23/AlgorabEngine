@@ -10,6 +10,7 @@
 #include "camera/camera.h"
 #include "renderer/renderer.h"
 #include "renderer/render_target.h"
+#include "entity/entity.h"
 
 #include <iostream>
 

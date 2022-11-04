@@ -1,22 +1,31 @@
 #include "renderer.h"
 
 void Renderer::renderAllPushed() {
-    glBindFramebuffer(GL_FRAMEBUFFER, target.getFrameBuffer());
+    drawCalls = 0;
+    //glBindFramebuffer(GL_FRAMEBUFFER, target.getFrameBuffer());
     glBindFramebuffer(GL_FRAMEBUFFER, 0); //TODO: Change to render to target then render target to screen
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-    viewMat = currentCamera->getViewMatrix();
-    projMat = currentCamera->getProjectionMatrix();
+    viewMat = *(currentCamera->getViewMatrix());
+    projMat = *(currentCamera->getProjectionMatrix());
 
     texturedModelShader.use();
     texturedModelShader.setMat4("view", viewMat);
     texturedModelShader.setMat4("projection", projMat);
-    for (ModelEntity modEnt : modelsToRender) {
+    for (ModelEntity* modEnt : modelsToRender) {
         renderModelEntity(modEnt);
     }
     modelsToRender = {};
+
+    //renderAllPushed
+    //sort all entities into bands
+    // scale down bands (scale in vertex shader using a given matrix??)
+    //split meshes in the future
+    //render each band in reverse order
+    // done?
+    //
 
     /*for (PointEntity pEnt : pointsToRender) {
         renderPointEntity(pEnt);
@@ -50,22 +59,29 @@ void Renderer::renderAllPushed() {
     //bind targets vertex array
     //disable depth test
     //bind current texture to texture colour buffer
+
+#ifdef _DEBUG
+    std::cout << "Draw Calls: " << drawCalls << std::endl;
+#endif // DEBUG    
 }
 
-void Renderer::renderModelEntity(ModelEntity modelEnt) {
-    //std::cout << "renderModelEntity" << std::endl;
+void Renderer::renderModelEntity(ModelEntity* modelEnt) {
+#ifdef DEBUG
+    std::cout << "renderModelEntity" << std::endl;
+#endif // DEBUG
+
     int i = 0;
 
     modelMat = glm::mat4(1.0f);
-    modelMat = glm::translate(modelMat, modelEnt.getPosition());
-    modelMat = glm::scale(modelMat, glm::vec3(modelEnt.getScale()));
+    modelMat = glm::translate(modelMat, modelEnt->getPosition());
+    modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale()));
 
     texturedModelShader.setMat4("model", modelMat);
 
-    for (Mesh modelMesh : modelEnt.getModel().getMeshes()) {
+    for (Mesh modelMesh : *(modelEnt->getModel()->getMeshes())) {
         i++;
         //load textures and set uniforms
-        std::vector<Texture> textures = modelMesh.getTextures();
+        std::vector<Texture> textures = *(modelMesh.getTextures());
         unsigned int diffuseNum = 1;
 
         //std::cout << textures.size() << std::endl;
@@ -90,12 +106,13 @@ void Renderer::renderModelEntity(ModelEntity modelEnt) {
         //draw mesh
         //std::cout << i << std::endl;
         glBindVertexArray(modelMesh.getVertexArray());
-        glDrawElements(GL_TRIANGLES, modelMesh.getIndices().size(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+        glDrawElements(GL_TRIANGLES, modelMesh.getIndices()->size(), GL_UNSIGNED_INT, 0);
+        drawCalls++;
+        //glBindVertexArray(0);
     }
 }
 
-void Renderer::renderPointEntity(PointEntity pointEnt) {
+void Renderer::renderPointEntity(PointEntity* pointEnt) {
     ;
 }
 
@@ -103,7 +120,7 @@ Camera* Renderer::getCurrentCamera() {
     return currentCamera;
 }
 
-RenderTarget Renderer::getTarget() {
+RenderTarget& Renderer::getTarget() {
     return target;
 }
 
@@ -115,17 +132,19 @@ void Renderer::setTarget(unsigned int tar) {
     target = tar;
 }
 
-void Renderer::PushEntity(ModelEntity modEnt) {
+void Renderer::PushEntity(ModelEntity* modEnt) {
     modelsToRender.push_back(modEnt);
 }
 
-void Renderer::PushEntity(PointEntity pEnt) {
+void Renderer::PushEntity(PointEntity* pEnt) {
     pointsToRender.push_back(pEnt);
 }
 
-Renderer::Renderer(Camera* cam, RenderTarget tar) :
+Renderer::Renderer(Camera* cam, RenderTarget& tar) :
     currentCamera(cam), target(tar) {
-    ;
+    modelMat = glm::mat4(1.0f);
+    viewMat = *(currentCamera->getViewMatrix());
+    projMat = *(currentCamera->getProjectionMatrix());
 }
 
 

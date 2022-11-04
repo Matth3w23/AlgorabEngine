@@ -34,8 +34,8 @@ public:
 	float getNearPlane();
 	float getFarPlane();
 
-	glm::mat4 getViewMatrix();
-	glm::mat4 getProjectionMatrix();
+	glm::mat4* getViewMatrix();
+	glm::mat4* getProjectionMatrix();
 
 	void setFieldOfView(float fov);
 	void setAspectRatio(float aspect);

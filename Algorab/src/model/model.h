@@ -34,7 +34,7 @@ public:
 	void addModel(std::string path);
 	void resetMeshes(); //set to default mesh
 
-	std::vector<Mesh> getMeshes();
+	std::vector<Mesh>* getMeshes();
 
 
 };

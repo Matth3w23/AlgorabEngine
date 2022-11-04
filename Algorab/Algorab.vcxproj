@@ -147,7 +147,7 @@
   <ItemGroup>
     <ClInclude Include="src\algorab.h" />
     <ClInclude Include="src\camera\camera.h" />
-    <ClInclude Include="src\entity.h" />
+    <ClInclude Include="src\entity\entity.h" />
     <ClInclude Include="src\model\mesh.h" />
     <ClInclude Include="src\model\model.h" />
     <ClInclude Include="src\renderer\renderer.h" />
@@ -161,7 +161,7 @@
   <ItemGroup>
     <ClCompile Include="src\algorab.cpp" />
     <ClCompile Include="src\camera\camera.cpp" />
-    <ClCompile Include="src\entity.cpp" />
+    <ClCompile Include="src\entity\entity.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\model\mesh.cpp" />
     <ClCompile Include="src\model\model.cpp" />

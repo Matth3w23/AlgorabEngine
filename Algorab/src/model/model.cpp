@@ -169,6 +169,6 @@ unsigned int Model::TextureFromFile(const char* path, const std::string& directo
     return textureID;
 }
 
-std::vector<Mesh> Model::getMeshes() {
-    return meshes;
+std::vector<Mesh>* Model::getMeshes() {
+    return &meshes;
 }

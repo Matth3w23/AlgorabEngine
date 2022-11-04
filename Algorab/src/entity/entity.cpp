@@ -13,12 +13,12 @@ void Entity::setPosition(glm::vec3 pos) {
 	position = pos;
 }
 
-ModelEntity::ModelEntity(Model mod, glm::vec3 pos, float scl) :
+ModelEntity::ModelEntity(Model* mod, glm::vec3 pos, float scl) :
 	model(mod), scale(scl), Entity::Entity(pos){
 	;
 }
 
-Model ModelEntity::getModel() {
+Model* ModelEntity::getModel() {
 	return model;
 }
 
@@ -26,7 +26,7 @@ float ModelEntity::getScale() {
 	return scale;
 }
 
-void ModelEntity::setModel(Model mod) {
+void ModelEntity::setModel(Model* mod) {
 	model = mod;
 }
 
