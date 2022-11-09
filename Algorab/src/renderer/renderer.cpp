@@ -1,23 +1,91 @@
 #include "renderer.h"
 
 void Renderer::renderAllPushed() {
-    drawCalls = 0;
-    //glBindFramebuffer(GL_FRAMEBUFFER, target.getFrameBuffer());
+    clearAllBuckets();
+
+    //sort into buckets
+    float dist;
+    float min;
+    float max;
+    float furVertDist;
+    unsigned int smallestBucket;
+    unsigned int largestBucket;
+    for (ModelEntity* modEnt : modelEntsToRender) {
+        dist = glm::length(modEnt->getPosition());
+        furVertDist = modEnt->getFurVertDist() * modEnt->getScale();
+        min = dist - furVertDist;
+        max = dist + furVertDist;
+
+        if (min < 0) {
+            smallestBucket = 0;
+        } else {
+            smallestBucket = std::floor(std::log(min / minimumCutOff) / std::log(bucketScale)); //change of base to bucketscale
+        }
+        largestBucket = std::floor(std::log(max / minimumCutOff) / std::log(bucketScale));
+        //std::cout << "TEST: " << smallestBucket << ", " << largestBucket << std::endl;
+
+        for (int i = smallestBucket; i <= largestBucket; i++) {
+            if (buckets.count(i) == 0) { //if the bucket doesn't exist yet
+                buckets.insert({ i, new std::vector<ModelEntity*> });
+            }
+
+            buckets[i]->push_back(modEnt);
+        }
+
+    }
+
+
+    //from largest bucket to smallest
+    //scale down and draw
     glBindFramebuffer(GL_FRAMEBUFFER, 0); //TODO: Change to render to target then render target to screen
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-    viewMat = *(currentCamera->getViewMatrix());
-    projMat = *(currentCamera->getProjectionMatrix());
+    currentCamera->setNearPlane(1.0f); //TODO: clean up, camera should always have this near/far plane (or the renderer should control it)
+    currentCamera->setFarPlane(1.0f * bucketScale);
+    currentCamera->updateProjectionMatrix();
 
     texturedModelShader.use();
+    viewMat = *(currentCamera->getViewMatrix());
+    projMat = *(currentCamera->getProjectionMatrix());
     texturedModelShader.setMat4("view", viewMat);
     texturedModelShader.setMat4("projection", projMat);
-    for (ModelEntity* modEnt : modelsToRender) {
-        renderModelEntity(modEnt);
+
+    for (auto it = buckets.rbegin(); it != buckets.rend(); it++) {
+        renderBucket(it->first, it->second);
     }
-    modelsToRender = {};
+
+
+
+
+
+    drawCalls = 0;
+    //glBindFramebuffer(GL_FRAMEBUFFER, target.getFrameBuffer());
+
+    
+    
+
+    /*float plane = minimumCutOff;
+    std::cout << "LOOP" << std::endl;
+    for (int i = 0; i < 10; i++) {
+
+        //std::cout << "TEST: ";
+        currentCamera->setNearPlane(plane);
+        //std::cout << plane << ", ";
+        plane *= 100;
+        currentCamera->setFarPlane(plane);
+        //std::cout << plane << std::endl;
+        currentCamera->updateProjectionMatrix();
+        projMat = *(currentCamera->getProjectionMatrix());
+
+        texturedModelShader.setMat4("projection", projMat);
+        for (ModelEntity* modEnt : modelEntsToRender) {
+            renderModelEntity(modEnt);
+        }
+    }*/
+    modelEntsToRender = {};
+    
 
     //renderAllPushed
     //sort all entities into bands
@@ -65,7 +133,7 @@ void Renderer::renderAllPushed() {
 #endif // DEBUG    
 }
 
-void Renderer::renderModelEntity(ModelEntity* modelEnt) {
+void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale) { //will need to change from float to unlimited number
 #ifdef DEBUG
     std::cout << "renderModelEntity" << std::endl;
 #endif // DEBUG
@@ -73,8 +141,8 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt) {
     int i = 0;
 
     modelMat = glm::mat4(1.0f);
-    modelMat = glm::translate(modelMat, modelEnt->getPosition());
-    modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale()));
+    modelMat = glm::translate(modelMat, modelEnt->getPosition()*currentBucketScale);
+    modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
 
     texturedModelShader.setMat4("model", modelMat);
 
@@ -116,6 +184,27 @@ void Renderer::renderPointEntity(PointEntity* pointEnt) {
     ;
 }
 
+void Renderer::renderBucket(unsigned int bucketNum, std::vector<ModelEntity*>* modEnts) {
+    //work out scale for bucket
+    //scale between 1 and 1*bucketscale?
+    //same as renderModelEntity but transform/model matrix affected by bucket scale
+    glClear(GL_DEPTH_BUFFER_BIT);
+    float currentBucketScale = 1 / (minimumCutOff * (std::pow(bucketScale, bucketNum)));
+    
+    for (ModelEntity* modEnt : *modEnts) {
+        renderModelEntity(modEnt, currentBucketScale);
+    }
+}
+
+void Renderer::clearAllBuckets() { //clears all models pushed to buckets
+    for (auto it = buckets.begin(); it != buckets.end(); it++) {
+        it->second->clear();
+    }
+}
+
+
+
+
 Camera* Renderer::getCurrentCamera() {
     return currentCamera;
 }
@@ -133,7 +222,7 @@ void Renderer::setTarget(unsigned int tar) {
 }
 
 void Renderer::PushEntity(ModelEntity* modEnt) {
-    modelsToRender.push_back(modEnt);
+    modelEntsToRender.push_back(modEnt);
 }
 
 void Renderer::PushEntity(PointEntity* pEnt) {

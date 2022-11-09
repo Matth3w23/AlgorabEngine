@@ -13,6 +13,7 @@
 #include "entity/entity.h"
 
 #include <iostream>
+#include <random>
 
 float screenTextureVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // positions   // texCoords

@@ -21,6 +21,7 @@ public:
 
 	Model* getModel();
 	float getScale();
+	float getFurVertDist();
 
 	void setModel(Model* mod);
 	void setScale(float scl);

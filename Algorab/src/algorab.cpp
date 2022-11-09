@@ -6,6 +6,11 @@ void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 }
 
 int main() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dist(-9999999999999999, 9999999999999999);
+
+
     stbi_set_flip_vertically_on_load(true);
 
     glfwInit();
@@ -47,7 +52,7 @@ int main() {
 
 
     Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false);
-    mainCam.setProjectionFrustum(70, 800.0f / 600.0f, 0.1, 100000, true);
+    mainCam.setProjectionFrustum(70, 800.0f / 600.0f, 100, 100000, true);
     mainCam.updateProjectionMatrix();
     mainCam.updateViewMatrix();
     RenderTarget mainRenderTarget;
@@ -56,16 +61,30 @@ int main() {
     Assimp::Importer modelImporter;
 
     Model backpackModel("assets/models/backpack/backpack.obj");
-    ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
-    /*ModelEntity backpackEntity2(&backpackModel, glm::vec3(2.0f, -1.0f, 5.0f), 0.5f);
-    ModelEntity backpackEntity3(&backpackModel, glm::vec3(2.0f, 1.0f, 5.0f), 0.5f);
-    ModelEntity backpackEntity4(&backpackModel, glm::vec3(1.0f, -3.0f, 3.0f), 0.5f);
-    ModelEntity backpackEntity5(&backpackModel, glm::vec3(2.0f, -4.0f, 0.0f), 0.5f);
-    ModelEntity backpackEntity6(&backpackModel, glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
-    ModelEntity backpackEntity7(&backpackModel, glm::vec3(-2.0f, -1.0f, 5.0f), 0.6f);
-    ModelEntity backpackEntity8(&backpackModel, glm::vec3(2.0f, 4.0f, 5.0f), 0.8f);
-    ModelEntity backpackEntity9(&backpackModel, glm::vec3(1.0f, -1.0f, 2.0f), 0.01f);
-    ModelEntity backpackEntity10(&backpackModel, glm::vec3(-2.6f, -4.7f, 3.0f), 0.3f);*/
+    
+    std::vector<ModelEntity> bpEnts;
+    ModelEntity backpackEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity2(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity3(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity4(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity5(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity6(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity7(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity8(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity10(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    bpEnts.push_back(backpackEntity);
+    bpEnts.push_back(backpackEntity2);
+    bpEnts.push_back(backpackEntity3);
+    bpEnts.push_back(backpackEntity4);
+    bpEnts.push_back(backpackEntity5);
+    bpEnts.push_back(backpackEntity6);
+    bpEnts.push_back(backpackEntity7);
+    bpEnts.push_back(backpackEntity8);
+    bpEnts.push_back(backpackEntity9);
+    for (ModelEntity& bp : bpEnts) {
+        bp.setScale(glm::length(bp.getPosition()) * (1.0f / 10.0f));
+    }
 
     const float radius = 10.0f;
 
@@ -78,7 +97,7 @@ int main() {
 
     unsigned int counter = 0;
     unsigned int zPos = 0;
-    const float moveStep = 1.0f;
+    const float moveStep = 10.0f;
 
     std::cout << "Starting" << std::endl;
     while (!glfwWindowShouldClose(testing)) { //main loop        
@@ -91,16 +110,9 @@ int main() {
         mainCam.updateViewMatrix();
 
         processInput(testing);
-        mainRenderer.PushEntity(&backpackEntity);
-       /* mainRenderer.PushEntity(&backpackEntity2);
-        mainRenderer.PushEntity(&backpackEntity3);
-        mainRenderer.PushEntity(&backpackEntity4);
-        mainRenderer.PushEntity(&backpackEntity5);
-        mainRenderer.PushEntity(&backpackEntity6);
-        mainRenderer.PushEntity(&backpackEntity7);
-        mainRenderer.PushEntity(&backpackEntity8);
-        mainRenderer.PushEntity(&backpackEntity9);
-        mainRenderer.PushEntity(&backpackEntity10);*/
+        for (ModelEntity& bp : bpEnts) {
+            mainRenderer.PushEntity(&bp);
+        }
         mainRenderer.renderAllPushed();
 
         glfwSwapBuffers(testing);
@@ -134,6 +146,7 @@ void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
+
 
 //finish mesh
 //vertex array, buffer and element abstraction?

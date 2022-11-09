@@ -26,6 +26,10 @@ float ModelEntity::getScale() {
 	return scale;
 }
 
+float ModelEntity::getFurVertDist() {
+	return model->getfurVertDist();
+}
+
 void ModelEntity::setModel(Model* mod) {
 	model = mod;
 }

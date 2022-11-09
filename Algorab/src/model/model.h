@@ -13,6 +13,8 @@ class Model {
 private:
 	std::vector<Mesh> meshes;
 
+	float furthestVertexDist = 0.0f;
+
 	bool currentlyDefault;
 	std::string defaultModelPath = "assets/models/cube/source/cube/cube.obj";
 
@@ -35,6 +37,7 @@ public:
 	void resetMeshes(); //set to default mesh
 
 	std::vector<Mesh>* getMeshes();
+	float getfurVertDist();
 
 
 };

@@ -30,9 +30,11 @@ void Model::addModel(std::string path) {
 }
 
 void Model::resetMeshes() {
+    furthestVertexDist = 0.0f;
     meshes = std::vector<Mesh>{};
     addModel(defaultModelPath);
     currentlyDefault = true;
+    
 }
 
 void Model::processNode(aiNode* node, const aiScene* scene) {
@@ -66,6 +68,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
         vector.y = mesh->mVertices[i].y;
         vector.z = mesh->mVertices[i].z;
         vertex.position = vector;
+        
+        if (glm::length(vector) >= furthestVertexDist) {
+            furthestVertexDist = glm::length(vector);
+        }
 
         //normals
         vector.x = mesh->mNormals[i].x;
@@ -171,4 +177,8 @@ unsigned int Model::TextureFromFile(const char* path, const std::string& directo
 
 std::vector<Mesh>* Model::getMeshes() {
     return &meshes;
+}
+
+float Model::getfurVertDist() {
+    return furthestVertexDist;
 }
