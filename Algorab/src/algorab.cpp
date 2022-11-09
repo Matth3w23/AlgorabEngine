@@ -107,7 +107,7 @@ int main() {
         //backpackEntity.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep));
         //backpackEntity.setScale(zPos * moveStep / 10);
 
-        mainCam.updateViewMatrix();
+        mainCam.updateRelativeViewMatrix();
 
         processInput(testing);
         for (ModelEntity& bp : bpEnts) {

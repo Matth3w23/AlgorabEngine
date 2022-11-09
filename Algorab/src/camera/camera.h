@@ -2,7 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-class Camera {
+class Camera { //TODO: Camera should be an entity?
 private:
 	//all in world space, which is left handed (y up)
 	glm::vec3 position;
@@ -18,6 +18,7 @@ private:
 	float farPlane = 100.0f;
 
 	glm::mat4 viewMatrix;
+	glm::mat4 relativeViewMatrix;
 	glm::mat4 projectionMatrix;
 
 public:
@@ -25,6 +26,7 @@ public:
 	Camera(glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 directionIndicator = glm::vec3(0.0f, 0.0f, 1.0f), bool lookAt = false);
 
 	void updateViewMatrix();
+	void updateRelativeViewMatrix();
 	void updateProjectionMatrix();
 
 	void lookAt(glm::vec3 lookPos);
@@ -33,8 +35,10 @@ public:
 	float getAspectRatio();
 	float getNearPlane();
 	float getFarPlane();
+	glm::vec3 getPosition();
 
 	glm::mat4* getViewMatrix();
+	glm::mat4* getRelativeViewMatrix();
 	glm::mat4* getProjectionMatrix();
 
 	void setFieldOfView(float fov);

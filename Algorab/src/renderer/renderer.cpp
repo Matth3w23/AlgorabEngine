@@ -47,7 +47,7 @@ void Renderer::renderAllPushed() {
     currentCamera->updateProjectionMatrix();
 
     texturedModelShader.use();
-    viewMat = *(currentCamera->getViewMatrix());
+    viewMat = *(currentCamera->getRelativeViewMatrix());
     projMat = *(currentCamera->getProjectionMatrix());
     texturedModelShader.setMat4("view", viewMat);
     texturedModelShader.setMat4("projection", projMat);
@@ -141,7 +141,7 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
     int i = 0;
 
     modelMat = glm::mat4(1.0f);
-    modelMat = glm::translate(modelMat, modelEnt->getPosition()*currentBucketScale);
+    modelMat = glm::translate(modelMat, (modelEnt->getPosition()-currentCamera->getPosition()) * currentBucketScale); //camera relative world position
     modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
 
     texturedModelShader.setMat4("model", modelMat);
