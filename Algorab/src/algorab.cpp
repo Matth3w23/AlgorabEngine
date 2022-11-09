@@ -51,7 +51,7 @@ int main() {
 #endif // DEBUG
 
 
-    Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false);
+    //Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false);
     mainCam.setProjectionFrustum(70, 800.0f / 600.0f, 100, 100000, true);
     mainCam.updateProjectionMatrix();
     mainCam.updateViewMatrix();
@@ -63,7 +63,8 @@ int main() {
     Model backpackModel("assets/models/backpack/backpack.obj");
     
     std::vector<ModelEntity> bpEnts;
-    ModelEntity backpackEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 0.0f, 10.0f), 1.0f);
+    /*ModelEntity backpackEntity1(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity2(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity3(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity4(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
@@ -72,8 +73,9 @@ int main() {
     ModelEntity backpackEntity7(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity8(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity10(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity10(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);*/
     bpEnts.push_back(backpackEntity);
+    /*bpEnts.push_back(backpackEntity1);
     bpEnts.push_back(backpackEntity2);
     bpEnts.push_back(backpackEntity3);
     bpEnts.push_back(backpackEntity4);
@@ -81,16 +83,16 @@ int main() {
     bpEnts.push_back(backpackEntity6);
     bpEnts.push_back(backpackEntity7);
     bpEnts.push_back(backpackEntity8);
-    bpEnts.push_back(backpackEntity9);
-    for (ModelEntity& bp : bpEnts) {
+    bpEnts.push_back(backpackEntity9);*/
+    /*for (ModelEntity& bp : bpEnts) {
         bp.setScale(glm::length(bp.getPosition()) * (1.0f / 10.0f));
-    }
+    }*/
 
     const float radius = 10.0f;
 
     double lastTime = glfwGetTime();
     double currentTime;
-    double frameTime;
+    //double deltaTime;
     double fps;
     double average = 0.0f;
     std::stringstream ss;
@@ -101,15 +103,17 @@ int main() {
 
     std::cout << "Starting" << std::endl;
     while (!glfwWindowShouldClose(testing)) { //main loop        
-        mainCam.setPosition(glm::vec3(sin(glfwGetTime()) * radius, 0.0f, cos(glfwGetTime()) * radius));
-        mainCam.lookAt(glm::vec3(0.0f, 0.0f, 0.0f)); //TODO: Add variants of setPosition and lookAt that don't use vec3
+        //mainCam.setPosition(glm::vec3(sin(glfwGetTime()) * radius, 0.0f, cos(glfwGetTime()) * radius));
+        //mainCam.lookAt(glm::vec3(0.0f, 0.0f, 0.0f)); //TODO: Add variants of setPosition and lookAt that don't use vec3
 
         //backpackEntity.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep));
         //backpackEntity.setScale(zPos * moveStep / 10);
 
+        processInput(testing);
+
         mainCam.updateRelativeViewMatrix();
 
-        processInput(testing);
+        
         for (ModelEntity& bp : bpEnts) {
             mainRenderer.PushEntity(&bp);
         }
@@ -119,8 +123,8 @@ int main() {
         glfwPollEvents();
 
         currentTime = glfwGetTime();
-        frameTime = currentTime - lastTime;
-        fps = 1 / frameTime;
+        deltaTime = currentTime - lastTime;
+        fps = 1 / deltaTime;
         lastTime = currentTime;
 
         counter++;
@@ -129,7 +133,8 @@ int main() {
         average = (average * (counter - 1) + fps) / counter;
         if (counter >= 20) {
             ss.str(std::string());
-            ss << "Frame Time: " << frameTime << ", FPS: " << average << ", Z: " << (zPos * moveStep);
+            //ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (zPos * moveStep);
+            ss << "[" << mainCam.getPosition().x << ", " << mainCam.getPosition().y << ", " << mainCam.getPosition().z << "]";
             glfwSetWindowTitle(testing, ss.str().c_str());
             //std::cout << fps << std::endl;
             counter = 0;
@@ -143,8 +148,32 @@ int main() {
 }
 
 void processInput(GLFWwindow* window) {
+    glm::vec3 movement = glm::vec3(0.0f);
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        movement.z += 1.0f * deltaTime;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        movement.z -= 1.0f * deltaTime;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        movement.x += 1.0f * deltaTime;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        movement.x -= 1.0f * deltaTime;
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        movement.y += 1.0f * deltaTime;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+        movement.y -= 1.0f * deltaTime;
+    }
+    if (length(movement) >= 0.0f) {
+        glm::normalize(movement);
+    }
+    mainCam.move(movement * moveSpeed);
 }
 
 

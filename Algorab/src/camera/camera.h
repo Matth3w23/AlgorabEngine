@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <math.h>
 
 class Camera { //TODO: Camera should be an entity?
 private:
@@ -9,6 +10,9 @@ private:
 	glm::vec3 forward;
 	glm::vec3 right;
 	glm::vec3 up;
+
+	float yaw = 0.0f; //probably should use radians so don't have to convert as much
+	float pitch = 0.0f;
 
 	glm::vec3 universeUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -41,12 +45,17 @@ public:
 	glm::mat4* getRelativeViewMatrix();
 	glm::mat4* getProjectionMatrix();
 
+	void updateVectorsFromAngles();
+	void updateAnglesFromVectors();
+
 	void setFieldOfView(float fov);
 	void setAspectRatio(float aspect);
 	void setNearPlane(float near);
 	void setFarPlane(float far);
 
 	void setPosition(glm::vec3 pos);
+	void move(glm::vec3 moveVec);
+	void turn(float yaw, float pitch, bool constrain);
 
 	void setProjectionFrustum(float fov, float aspect, float near, float far, bool updateProjection = true);
 

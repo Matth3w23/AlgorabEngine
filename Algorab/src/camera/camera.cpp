@@ -66,6 +66,21 @@ glm::mat4* Camera::getProjectionMatrix() {
 	return &projectionMatrix;
 }
 
+void Camera::updateVectorsFromAngles() {
+	forward.x = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	forward.y = sin(glm::radians(pitch));
+	forward.z = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	forward = glm::normalize(forward);
+	right = glm::cross(universeUp, forward);
+	up = glm::cross(forward, right);
+
+}
+
+void Camera::updateAnglesFromVectors() {
+	yaw = glm::degrees(atan2(forward.x, forward.z));
+	pitch = glm::degrees(asin(forward.y));
+}
+
 void Camera::setNearPlane(float near) {
 	nearPlane = near;
 }
@@ -84,6 +99,25 @@ void Camera::setFarPlane(float far) {
 
 void Camera::setPosition(glm::vec3 pos) {
 	position = pos;
+}
+
+void Camera::move(glm::vec3 moveVec) {
+	position += moveVec;
+}
+
+void Camera::turn(float yw, float ptch, bool constrain) {
+	yaw += yw;
+	pitch += ptch;
+	yaw = fmod(yaw, 360.0f);
+
+	if (constrain) {
+		if (pitch > 90.0f) {
+			pitch = 90.0f;
+		}
+		if (pitch < -90.0f) {
+			pitch = -90.0f;
+		}
+	}
 }
 
 void Camera::setProjectionFrustum(float fov, float aspect, float near, float far, bool updateProjection) {

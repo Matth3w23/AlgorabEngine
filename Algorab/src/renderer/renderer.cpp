@@ -139,11 +139,18 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
 #endif // DEBUG
 
     int i = 0;
+    glm::vec4 test = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     modelMat = glm::mat4(1.0f);
+    glm::vec3 posDiff = modelEnt->getPosition() - currentCamera->getPosition();
+    //std::cout << "[" << posDiff.x << "," << posDiff.y << "," << posDiff.z << "]" << std::endl;
     modelMat = glm::translate(modelMat, (modelEnt->getPosition()-currentCamera->getPosition()) * currentBucketScale); //camera relative world position
     modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
 
+    test = projMat * viewMat * modelMat * test;
+    if (currentBucketScale == 10.0f) {
+        std::cout << "[" << test.x << "," << test.y << "," << test.z << "]" << std::endl;
+    }
     texturedModelShader.setMat4("model", modelMat);
 
     for (Mesh modelMesh : *(modelEnt->getModel()->getMeshes())) {
