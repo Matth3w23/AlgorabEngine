@@ -21,15 +21,15 @@ Camera::Camera(glm::vec3 pos, glm::vec3 directionIndicator, bool lookAt) : posit
 }
 
 void Camera::updateViewMatrix() {
-	viewMatrix = glm::lookAt(position, position + forward, up);
+	viewMatrix = glm::lookAtLH(position, position + forward, up);
 }
 
 void Camera::updateRelativeViewMatrix() {
-	relativeViewMatrix = glm::lookAt(glm::vec3(0.0f), forward, up);
+	relativeViewMatrix = glm::lookAtLH(glm::vec3(0.0f), forward, up);
 }
 
 void Camera::updateProjectionMatrix() {
-	projectionMatrix = glm::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+	projectionMatrix = glm::perspectiveLH(fieldOfView, aspectRatio, nearPlane, farPlane);
 }
 
 void Camera::lookAt(glm::vec3 lookPos) {

@@ -22,7 +22,7 @@ void Renderer::renderAllPushed() {
             smallestBucket = std::floor(std::log(min / minimumCutOff) / std::log(bucketScale)); //change of base to bucketscale
         }
         largestBucket = std::floor(std::log(max / minimumCutOff) / std::log(bucketScale));
-        //std::cout << "TEST: " << smallestBucket << ", " << largestBucket << std::endl;
+        std::cout << "TEST: " << smallestBucket << ", " << largestBucket << std::endl;
 
         for (int i = smallestBucket; i <= largestBucket; i++) {
             if (buckets.count(i) == 0) { //if the bucket doesn't exist yet
@@ -139,18 +139,12 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
 #endif // DEBUG
 
     int i = 0;
-    glm::vec4 test = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     modelMat = glm::mat4(1.0f);
     glm::vec3 posDiff = modelEnt->getPosition() - currentCamera->getPosition();
     //std::cout << "[" << posDiff.x << "," << posDiff.y << "," << posDiff.z << "]" << std::endl;
     modelMat = glm::translate(modelMat, (modelEnt->getPosition()-currentCamera->getPosition()) * currentBucketScale); //camera relative world position
     modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
-
-    test = projMat * viewMat * modelMat * test;
-    if (currentBucketScale == 10.0f) {
-        std::cout << "[" << test.x << "," << test.y << "," << test.z << "]" << std::endl;
-    }
     texturedModelShader.setMat4("model", modelMat);
 
     for (Mesh modelMesh : *(modelEnt->getModel()->getMeshes())) {
@@ -208,9 +202,6 @@ void Renderer::clearAllBuckets() { //clears all models pushed to buckets
         it->second->clear();
     }
 }
-
-
-
 
 Camera* Renderer::getCurrentCamera() {
     return currentCamera;

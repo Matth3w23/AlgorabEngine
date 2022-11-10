@@ -41,6 +41,7 @@ int main() {
     }
 
     glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW); //due to different coordinate systems
     //glEnable(GL_MULTISAMPLE);
 
 #ifdef _DEBUG
@@ -63,7 +64,8 @@ int main() {
     Model backpackModel("assets/models/backpack/backpack.obj");
     
     std::vector<ModelEntity> bpEnts;
-    ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 0.0f, 10.0f), 1.0f);
+    ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
+    ModelEntity backpackEntityA(&backpackModel, glm::vec3(5.0f, 0.0f, 10.0f), 0.3f);
     /*ModelEntity backpackEntity1(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity2(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity3(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
@@ -75,6 +77,7 @@ int main() {
     ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity10(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);*/
     bpEnts.push_back(backpackEntity);
+    bpEnts.push_back(backpackEntityA);
     /*bpEnts.push_back(backpackEntity1);
     bpEnts.push_back(backpackEntity2);
     bpEnts.push_back(backpackEntity3);
@@ -147,7 +150,7 @@ int main() {
     return 0;
 }
 
-void processInput(GLFWwindow* window) {
+void processInput(GLFWwindow* window) { //could use keyboard callback instead
     glm::vec3 movement = glm::vec3(0.0f);
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
