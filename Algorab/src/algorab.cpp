@@ -64,8 +64,9 @@ int main() {
     Model backpackModel("assets/models/backpack/backpack.obj");
     
     std::vector<ModelEntity> bpEnts;
-    ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
-    ModelEntity backpackEntityA(&backpackModel, glm::vec3(5.0f, 0.0f, 10.0f), 0.3f);
+    //ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
+    ModelEntity backpackEntity(&backpackModel, glm::vec3(5.0f, 0.0f, 10.0f), 0.1f);
+    //ModelEntity backpackEntityA(&backpackModel, glm::vec3(5.0f, 0.0f, 10.0f), 0.3f);
     /*ModelEntity backpackEntity1(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity2(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity3(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
@@ -77,7 +78,7 @@ int main() {
     ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity10(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);*/
     bpEnts.push_back(backpackEntity);
-    bpEnts.push_back(backpackEntityA);
+    //bpEnts.push_back(backpackEntityA);
     /*bpEnts.push_back(backpackEntity1);
     bpEnts.push_back(backpackEntity2);
     bpEnts.push_back(backpackEntity3);

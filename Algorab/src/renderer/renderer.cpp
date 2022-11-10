@@ -11,7 +11,7 @@ void Renderer::renderAllPushed() {
     unsigned int smallestBucket;
     unsigned int largestBucket;
     for (ModelEntity* modEnt : modelEntsToRender) {
-        dist = glm::length(modEnt->getPosition());
+        dist = modEnt->getPosition().z - currentCamera->getPosition().z;
         furVertDist = modEnt->getFurVertDist() * modEnt->getScale();
         min = dist - furVertDist;
         max = dist + furVertDist;
@@ -25,6 +25,7 @@ void Renderer::renderAllPushed() {
         std::cout << "TEST: " << smallestBucket << ", " << largestBucket << std::endl;
 
         for (int i = smallestBucket; i <= largestBucket; i++) {
+            std::cout << "BUCKET: " << i << std::endl;
             if (buckets.count(i) == 0) { //if the bucket doesn't exist yet
                 buckets.insert({ i, new std::vector<ModelEntity*> });
             }
