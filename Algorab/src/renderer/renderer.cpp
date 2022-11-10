@@ -22,10 +22,10 @@ void Renderer::renderAllPushed() {
             smallestBucket = std::floor(std::log(min / minimumCutOff) / std::log(bucketScale)); //change of base to bucketscale
         }
         largestBucket = std::floor(std::log(max / minimumCutOff) / std::log(bucketScale));
-        std::cout << "TEST: " << smallestBucket << ", " << largestBucket << std::endl;
+        //std::cout << "TEST: " << smallestBucket << ", " << largestBucket << std::endl;
 
         for (int i = smallestBucket; i <= largestBucket; i++) {
-            std::cout << "BUCKET: " << i << std::endl;
+            //std::cout << "BUCKET: " << i << std::endl;
             if (buckets.count(i) == 0) { //if the bucket doesn't exist yet
                 buckets.insert({ i, new std::vector<ModelEntity*> });
             }

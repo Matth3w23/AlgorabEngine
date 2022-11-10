@@ -63,9 +63,9 @@ int main() {
 
     Model backpackModel("assets/models/backpack/backpack.obj");
     
-    std::vector<ModelEntity> bpEnts;
+    std::vector<ModelEntity*> bpEnts;
     //ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
-    ModelEntity backpackEntity(&backpackModel, glm::vec3(5.0f, 0.0f, 10.0f), 0.1f);
+    ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 10.0f), 1.0f);
     //ModelEntity backpackEntityA(&backpackModel, glm::vec3(5.0f, 0.0f, 10.0f), 0.3f);
     /*ModelEntity backpackEntity1(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity2(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
@@ -77,7 +77,7 @@ int main() {
     ModelEntity backpackEntity8(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity10(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);*/
-    bpEnts.push_back(backpackEntity);
+    bpEnts.push_back(&backpackEntity);
     //bpEnts.push_back(backpackEntityA);
     /*bpEnts.push_back(backpackEntity1);
     bpEnts.push_back(backpackEntity2);
@@ -103,14 +103,15 @@ int main() {
 
     unsigned int counter = 0;
     unsigned int zPos = 0;
-    const float moveStep = 10.0f;
+    const float moveStep = 10000.0f;
 
     std::cout << "Starting" << std::endl;
     while (!glfwWindowShouldClose(testing)) { //main loop        
         //mainCam.setPosition(glm::vec3(sin(glfwGetTime()) * radius, 0.0f, cos(glfwGetTime()) * radius));
         //mainCam.lookAt(glm::vec3(0.0f, 0.0f, 0.0f)); //TODO: Add variants of setPosition and lookAt that don't use vec3
 
-        //backpackEntity.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep));
+        backpackEntity.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep));
+        mainCam.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep - 5.0f));
         //backpackEntity.setScale(zPos * moveStep / 10);
 
         processInput(testing);
@@ -118,8 +119,8 @@ int main() {
         mainCam.updateRelativeViewMatrix();
 
         
-        for (ModelEntity& bp : bpEnts) {
-            mainRenderer.PushEntity(&bp);
+        for (ModelEntity* bp : bpEnts) {
+            mainRenderer.PushEntity(bp);
         }
         mainRenderer.renderAllPushed();
 
@@ -132,13 +133,13 @@ int main() {
         lastTime = currentTime;
 
         counter++;
-        //zPos++;
+        zPos++;
 
         average = (average * (counter - 1) + fps) / counter;
         if (counter >= 20) {
             ss.str(std::string());
-            //ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (zPos * moveStep);
-            ss << "[" << mainCam.getPosition().x << ", " << mainCam.getPosition().y << ", " << mainCam.getPosition().z << "]";
+            ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (zPos * moveStep);
+            //ss << "[" << mainCam.getPosition().x << ", " << mainCam.getPosition().y << ", " << mainCam.getPosition().z << "]";
             glfwSetWindowTitle(testing, ss.str().c_str());
             //std::cout << fps << std::endl;
             counter = 0;
