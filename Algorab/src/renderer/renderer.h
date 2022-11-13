@@ -27,6 +27,7 @@ private:
 	std::map<unsigned int, std::vector<ModelEntity*>*> buckets;
 
 	const float bucketScale = 100.0f; //scale between the near plane and the far plane in bucket
+	double bucketScaleLog = std::log(bucketScale);
 	const float minimumCutOff = 0.1f; //otherwise
 
 	RenderTarget& target; //target framebuffer

@@ -1,5 +1,8 @@
 #include "algorab.h"
 
+double deltaTime;
+float moveSpeed = 1.0f;
+Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false);
 
 void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
     std::cout << "OpenGL error:" << type << ", " << message << std::endl;
@@ -9,7 +12,6 @@ int main() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(-9999999999999999, 9999999999999999);
-
 
     stbi_set_flip_vertically_on_load(true);
 
@@ -105,13 +107,15 @@ int main() {
     unsigned int zPos = 0;
     const float moveStep = 10000.0f;
 
+    bool firstMouse = true;
+
     std::cout << "Starting" << std::endl;
     while (!glfwWindowShouldClose(testing)) { //main loop        
         //mainCam.setPosition(glm::vec3(sin(glfwGetTime()) * radius, 0.0f, cos(glfwGetTime()) * radius));
         //mainCam.lookAt(glm::vec3(0.0f, 0.0f, 0.0f)); //TODO: Add variants of setPosition and lookAt that don't use vec3
 
-        backpackEntity.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep));
-        mainCam.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep - 5.0f));
+        //backpackEntity.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep));
+        //mainCam.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep - 5.0f));
         //backpackEntity.setScale(zPos * moveStep / 10);
 
         processInput(testing);
@@ -133,7 +137,7 @@ int main() {
         lastTime = currentTime;
 
         counter++;
-        zPos++;
+        //zPos++;
 
         average = (average * (counter - 1) + fps) / counter;
         if (counter >= 20) {
@@ -179,6 +183,21 @@ void processInput(GLFWwindow* window) { //could use keyboard callback instead
         glm::normalize(movement);
     }
     mainCam.move(movement * moveSpeed);
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (firstMouse) {
+        mLastX = xpos;
+        mLastY = ypos;
+        firstMouse = false;
+    }
+
+    float offsetX = xpos - mLastX;
+    float offsetY = -(ypos - mLastY); //y = 0 at top
+    mLastX = xpos;
+    mLastY = ypos;
+
+    camera.ProcessMouseMovement(offsetX, offsetY);
 }
 
 

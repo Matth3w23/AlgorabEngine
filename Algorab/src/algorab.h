@@ -15,10 +15,6 @@
 #include <iostream>
 #include <random>
 
-double deltaTime;
-float moveSpeed = 1.0f;
-Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false);
-
 float screenTextureVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // positions   // texCoords
         -1.0f,  1.0f,  0.0f, 1.0f,

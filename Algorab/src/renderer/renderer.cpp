@@ -16,12 +16,16 @@ void Renderer::renderAllPushed() {
         min = dist - furVertDist;
         max = dist + furVertDist;
 
-        if (min < 0) {
+        if (max < minimumCutOff) { //behind the camera
+            continue;
+        }
+
+        if (min < minimumCutOff) {
             smallestBucket = 0;
         } else {
-            smallestBucket = std::floor(std::log(min / minimumCutOff) / std::log(bucketScale)); //change of base to bucketscale
+            smallestBucket = std::floor(std::log(min / minimumCutOff) / bucketScaleLog); //change of base to bucketscale, both should always be positive
         }
-        largestBucket = std::floor(std::log(max / minimumCutOff) / std::log(bucketScale));
+        largestBucket = std::floor(std::log(max / minimumCutOff) / bucketScaleLog);
         //std::cout << "TEST: " << smallestBucket << ", " << largestBucket << std::endl;
 
         for (int i = smallestBucket; i <= largestBucket; i++) {

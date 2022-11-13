@@ -34,6 +34,7 @@ void Camera::updateProjectionMatrix() {
 
 void Camera::lookAt(glm::vec3 lookPos) {
 	forward = glm::normalize(lookPos - position);
+	updateAnglesFromVectors();
 }
 
 float Camera::getFov() {
@@ -118,6 +119,8 @@ void Camera::turn(float yw, float ptch, bool constrain) {
 			pitch = -90.0f;
 		}
 	}
+
+	updateVectorsFromAngles();
 }
 
 void Camera::setProjectionFrustum(float fov, float aspect, float near, float far, bool updateProjection) {
