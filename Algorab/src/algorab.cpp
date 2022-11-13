@@ -1,8 +1,19 @@
 #include "algorab.h"
 
 double deltaTime;
-float moveSpeed = 1.0f;
+float moveSpeed = 9999999999999999;
 Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false);
+
+bool firstMouse = true;
+float mouseLastX = 800.0f / 2.0f;
+float mouseLastY = 600.0f / 2.0f;
+
+bool performanceRunning = false;
+bool performanceCheck = false;
+
+double performanceTotal = 0.0;
+unsigned int performanceIts = 0;
+bool pDown = false;
 
 void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
     std::cout << "OpenGL error:" << type << ", " << message << std::endl;
@@ -12,6 +23,7 @@ int main() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(-9999999999999999, 9999999999999999);
+    //std::uniform_real_distribution<> dist(-99, 99);
 
     stbi_set_flip_vertically_on_load(true);
 
@@ -35,6 +47,9 @@ int main() {
     }
     glfwMakeContextCurrent(testing);
     glfwSwapInterval(0);
+
+    glfwSetInputMode(testing, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(testing, mouse_callback);
 
     //load gl function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -68,8 +83,8 @@ int main() {
     std::vector<ModelEntity*> bpEnts;
     //ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
     ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 10.0f), 1.0f);
-    //ModelEntity backpackEntityA(&backpackModel, glm::vec3(5.0f, 0.0f, 10.0f), 0.3f);
-    /*ModelEntity backpackEntity1(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntityA(&backpackModel, glm::vec3(5.0f, 0.0f, 10.0f), 0.3f);
+    ModelEntity backpackEntity1(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity2(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity3(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity4(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
@@ -78,21 +93,21 @@ int main() {
     ModelEntity backpackEntity7(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity8(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity10(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);*/
+    ModelEntity backpackEntity10(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     bpEnts.push_back(&backpackEntity);
-    //bpEnts.push_back(backpackEntityA);
-    /*bpEnts.push_back(backpackEntity1);
-    bpEnts.push_back(backpackEntity2);
-    bpEnts.push_back(backpackEntity3);
-    bpEnts.push_back(backpackEntity4);
-    bpEnts.push_back(backpackEntity5);
-    bpEnts.push_back(backpackEntity6);
-    bpEnts.push_back(backpackEntity7);
-    bpEnts.push_back(backpackEntity8);
-    bpEnts.push_back(backpackEntity9);*/
-    /*for (ModelEntity& bp : bpEnts) {
-        bp.setScale(glm::length(bp.getPosition()) * (1.0f / 10.0f));
-    }*/
+    bpEnts.push_back(&backpackEntityA);
+    bpEnts.push_back(&backpackEntity1);
+    bpEnts.push_back(&backpackEntity2);
+    bpEnts.push_back(&backpackEntity3);
+    bpEnts.push_back(&backpackEntity4);
+    bpEnts.push_back(&backpackEntity5);
+    bpEnts.push_back(&backpackEntity6);
+    bpEnts.push_back(&backpackEntity7);
+    bpEnts.push_back(&backpackEntity8);
+    bpEnts.push_back(&backpackEntity9);
+    for (ModelEntity* bp : bpEnts) {
+        bp->setScale(glm::length(bp->getPosition()) * (1.0f / 10.0f));
+    }
 
     const float radius = 10.0f;
 
@@ -142,12 +157,41 @@ int main() {
         average = (average * (counter - 1) + fps) / counter;
         if (counter >= 20) {
             ss.str(std::string());
-            ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (zPos * moveStep);
+            //ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (zPos * moveStep);
             //ss << "[" << mainCam.getPosition().x << ", " << mainCam.getPosition().y << ", " << mainCam.getPosition().z << "]";
-            glfwSetWindowTitle(testing, ss.str().c_str());
+            //glfwSetWindowTitle(testing, ss.str().c_str());
             //std::cout << fps << std::endl;
             counter = 0;
             average = 0.0f;
+        }
+
+
+        //rudimentary performance stuff
+        if (performanceRunning) {
+
+            if (!performanceCheck) { //just stopped performance
+                if (performanceIts > 0) {
+                    performanceRunning = false;
+                    //std::cout << "Average frame time: " << performanceTotal / performanceIts << "(Average FPS: " << performanceIts / performanceTotal << ")" << std::endl;
+                    ss.str(std::string());
+                    ss << "Average frame time: " << performanceTotal / performanceIts << "(Average FPS: " << performanceIts / performanceTotal << ")";
+                    glfwSetWindowTitle(testing, ss.str().c_str());
+                } else {
+                    std::cout << "Performance ran for 0 iterations" << std::endl;
+                }
+
+            } else {
+                performanceIts += 1;
+                performanceTotal += deltaTime;
+            }
+
+        } else {
+            if (performanceCheck) {
+                performanceIts = 0;
+                performanceTotal = 0.0f;
+                performanceRunning = true;
+                std::cout << "Performance Started" << std::endl;
+            }
         }
         
     }
@@ -179,25 +223,42 @@ void processInput(GLFWwindow* window) { //could use keyboard callback instead
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
         movement.y -= 1.0f * deltaTime;
     }
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
+        if (!pDown) {
+            if (performanceCheck) {
+                performanceCheck = false;
+            } else {
+                performanceCheck = true;
+            }
+            pDown = true;
+        }
+    }
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_RELEASE) {
+        pDown = false;
+    }
+
+
+
+
     if (length(movement) >= 0.0f) {
         glm::normalize(movement);
     }
-    mainCam.move(movement * moveSpeed);
+    mainCam.moveRelative(movement * moveSpeed);
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     if (firstMouse) {
-        mLastX = xpos;
-        mLastY = ypos;
+        mouseLastX = xpos;
+        mouseLastY = ypos;
         firstMouse = false;
     }
 
-    float offsetX = xpos - mLastX;
-    float offsetY = -(ypos - mLastY); //y = 0 at top
-    mLastX = xpos;
-    mLastY = ypos;
+    float offsetX = xpos - mouseLastX;
+    float offsetY = -(ypos - mouseLastY); //y = 0 at top
+    mouseLastX = xpos;
+    mouseLastY = ypos;
 
-    camera.ProcessMouseMovement(offsetX, offsetY);
+    mainCam.turn(offsetX * 0.25, offsetY * 0.25, true); //TODO: Add sensitivity
 }
 
 

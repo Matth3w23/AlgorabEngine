@@ -1,7 +1,10 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <glm/ext.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <math.h>
+
+#include <iostream>
 
 class Camera { //TODO: Camera should be an entity?
 private:
@@ -55,6 +58,7 @@ public:
 
 	void setPosition(glm::vec3 pos);
 	void move(glm::vec3 moveVec);
+	void moveRelative(glm::vec3 moveVec);
 	void turn(float yaw, float pitch, bool constrain);
 
 	void setProjectionFrustum(float fov, float aspect, float near, float far, bool updateProjection = true);

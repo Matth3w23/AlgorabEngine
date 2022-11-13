@@ -72,12 +72,12 @@ void Camera::updateVectorsFromAngles() {
 	forward.y = sin(glm::radians(pitch));
 	forward.z = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 	forward = glm::normalize(forward);
-	right = glm::cross(universeUp, forward);
-	up = glm::cross(forward, right);
+	right = glm::normalize(glm::cross(universeUp, forward));
+	up = glm::normalize(glm::cross(forward, right));
 
 }
 
-void Camera::updateAnglesFromVectors() {
+void Camera::updateAnglesFromVectors() { //0 degrees yaw points towards [0,0,1]
 	yaw = glm::degrees(atan2(forward.x, forward.z));
 	pitch = glm::degrees(asin(forward.y));
 }
@@ -106,17 +106,21 @@ void Camera::move(glm::vec3 moveVec) {
 	position += moveVec;
 }
 
+void Camera::moveRelative(glm::vec3 moveVec) {
+	position += moveVec.x * right + moveVec.y * up + moveVec.z * forward;
+}
+
 void Camera::turn(float yw, float ptch, bool constrain) {
 	yaw += yw;
 	pitch += ptch;
 	yaw = fmod(yaw, 360.0f);
 
 	if (constrain) {
-		if (pitch > 90.0f) {
-			pitch = 90.0f;
+		if (pitch > 89.99f) {
+			pitch = 89.99f;
 		}
-		if (pitch < -90.0f) {
-			pitch = -90.0f;
+		if (pitch < -89.99f) {
+			pitch = -89.99f;
 		}
 	}
 

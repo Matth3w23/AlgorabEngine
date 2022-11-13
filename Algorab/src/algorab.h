@@ -29,6 +29,8 @@ float screenTextureVertices[] = { // vertex attributes for a quad that fills the
 
 void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+
 int main();
 
 void processInput(GLFWwindow* window);

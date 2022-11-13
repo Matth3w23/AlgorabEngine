@@ -3,6 +3,9 @@
 void Renderer::renderAllPushed() {
     clearAllBuckets();
 
+    viewMat = *(currentCamera->getRelativeViewMatrix());
+    projMat = *(currentCamera->getProjectionMatrix());
+
     //sort into buckets
     float dist;
     float min;
@@ -11,7 +14,7 @@ void Renderer::renderAllPushed() {
     unsigned int smallestBucket;
     unsigned int largestBucket;
     for (ModelEntity* modEnt : modelEntsToRender) {
-        dist = modEnt->getPosition().z - currentCamera->getPosition().z;
+        dist = (viewMat * glm::vec4(modEnt->getPosition() - currentCamera->getPosition(), 1.0f)).z; //TODO probably very inefficient, needs looking at
         furVertDist = modEnt->getFurVertDist() * modEnt->getScale();
         min = dist - furVertDist;
         max = dist + furVertDist;
@@ -52,8 +55,6 @@ void Renderer::renderAllPushed() {
     currentCamera->updateProjectionMatrix();
 
     texturedModelShader.use();
-    viewMat = *(currentCamera->getRelativeViewMatrix());
-    projMat = *(currentCamera->getProjectionMatrix());
     texturedModelShader.setMat4("view", viewMat);
     texturedModelShader.setMat4("projection", projMat);
 
@@ -134,7 +135,7 @@ void Renderer::renderAllPushed() {
     //bind current texture to texture colour buffer
 
 #ifdef _DEBUG
-    std::cout << "Draw Calls: " << drawCalls << std::endl;
+    //std::cout << "Draw Calls: " << drawCalls << std::endl;
 #endif // DEBUG    
 }
 
