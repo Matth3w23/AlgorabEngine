@@ -42,11 +42,11 @@ public:
 	float getAspectRatio();
 	float getNearPlane();
 	float getFarPlane();
-	glm::vec3 getPosition();
+	glm::vec3& getPosition();
 
-	glm::mat4* getViewMatrix();
-	glm::mat4* getRelativeViewMatrix();
-	glm::mat4* getProjectionMatrix();
+	glm::mat4& getViewMatrix();
+	glm::mat4& getRelativeViewMatrix();
+	glm::mat4& getProjectionMatrix();
 
 	void updateVectorsFromAngles();
 	void updateAnglesFromVectors();

@@ -7,7 +7,7 @@ private:
 	glm::vec3 position;
 public:
 	Entity(glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f));
-	glm::vec3 getPosition();
+	glm::vec3& getPosition();
 	void setPosition(glm::vec3 pos);
 
 };

@@ -23,8 +23,11 @@
 class Renderer {
 private:
 	unsigned int drawCalls = 0;
+	glm::vec3 posDiff;
 
-	std::map<unsigned int, std::vector<ModelEntity*>*> buckets;
+	std::vector<unsigned int> loadedTextures; //stores id's of textures already loaded in
+
+	std::map<unsigned int, std::vector<ModelEntity*>> buckets;
 
 	const float bucketScale = 100.0f; //scale between the near plane and the far plane in bucket
 	double bucketScaleLog = std::log(bucketScale);
@@ -42,7 +45,7 @@ private:
 
 	void renderModelEntity(ModelEntity* modelEnt, float currentBucketScale = 1.0f);
 	void renderPointEntity(PointEntity* pointEnt);
-	void renderBucket(unsigned int bucket, std::vector<ModelEntity*>* modEnts);
+	void renderBucket(unsigned int bucket, std::vector<ModelEntity*>& modEnts);
 
 	void clearAllBuckets();
 public:
@@ -54,8 +57,8 @@ public:
 	void setCurrentCamera(Camera* cam);
 	void setTarget(unsigned int tar);
 
-	void PushEntity(ModelEntity* modEnt);
-	void PushEntity(PointEntity* pEnt);
+	void PushEntity(ModelEntity& modEnt);
+	void PushEntity(PointEntity& pEnt);
 
 	Renderer(Camera* cam, RenderTarget& tar);
 

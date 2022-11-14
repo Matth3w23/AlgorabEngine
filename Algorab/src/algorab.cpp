@@ -166,7 +166,7 @@ int main() {
         mainCam.updateRelativeViewMatrix();
 
         for (ModelEntity* bp : bpEnts) {
-            mainRenderer.PushEntity(bp);
+            mainRenderer.PushEntity(*bp);
         }
         mainRenderer.renderAllPushed();
 
@@ -205,7 +205,7 @@ int main() {
                     //std::cout << "Average frame time: " << performanceTotal / performanceIts << "(Average FPS: " << performanceIts / performanceTotal << ")" << std::endl;
                     ss.str(std::string());
                     ss << "Average frame time: " << performanceTotal / performanceIts << "(Average FPS: " << performanceIts / performanceTotal << ")";
-                    glfwSetWindowTitle(window, ss.str().c_str());
+                    //glfwSetWindowTitle(window, ss.str().c_str());
                 } else {
                     std::cout << "Performance ran for 0 iterations" << std::endl;
                 }

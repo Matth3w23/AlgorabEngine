@@ -53,18 +53,18 @@ float Camera::getFarPlane() {
 	return farPlane;
 }
 
-glm::vec3 Camera::getPosition() {
+glm::vec3& Camera::getPosition() {
 	return position;
 }
 
-glm::mat4* Camera::getViewMatrix() {
-	return &viewMatrix;
+glm::mat4& Camera::getViewMatrix() {
+	return viewMatrix;
 }
-glm::mat4* Camera::getRelativeViewMatrix() {
-	return &relativeViewMatrix;
+glm::mat4& Camera::getRelativeViewMatrix() {
+	return relativeViewMatrix;
 }
-glm::mat4* Camera::getProjectionMatrix() {
-	return &projectionMatrix;
+glm::mat4& Camera::getProjectionMatrix() {
+	return projectionMatrix;
 }
 
 void Camera::updateVectorsFromAngles() {

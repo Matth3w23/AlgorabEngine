@@ -31,12 +31,12 @@ private:
 
 public:
 	Model(std::string path);
-	Model(std::vector<Mesh> mshs);
+	Model(std::vector<Mesh>& mshs);
 
 	void addModel(std::string path);
 	void resetMeshes(); //set to default mesh
 
-	std::vector<Mesh>* getMeshes();
+	std::vector<Mesh>& getMeshes();
 	float getfurVertDist();
 
 

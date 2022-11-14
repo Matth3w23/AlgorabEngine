@@ -98,11 +98,15 @@ public:
 		use();
 		glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 	}
-	void setInt(const std::string& name, int value) const {
+	void setInt(const std::string& name, int& value) const {
 		use();
 		glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 	}
-	void setFloat(const std::string& name, float value) const {
+	void setUInt(const std::string& name, unsigned int& value) const {
+		use();
+		glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+	}
+	void setFloat(const std::string& name, float& value) const {
 		use();
 		glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 	}

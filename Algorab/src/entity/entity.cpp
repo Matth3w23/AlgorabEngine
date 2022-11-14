@@ -5,7 +5,7 @@ Entity::Entity(glm::vec3 pos) :
 	;
 }
 
-glm::vec3 Entity::getPosition() {
+glm::vec3& Entity::getPosition() {
 	return position;
 }
 

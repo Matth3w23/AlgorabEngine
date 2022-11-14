@@ -4,7 +4,7 @@ Model::Model(std::string path) {
     addModel(path);
 }
 
-Model::Model(std::vector<Mesh> mshs) :
+Model::Model(std::vector<Mesh>& mshs) :
     meshes(mshs) {
     currentlyDefault = false;
 }
@@ -175,8 +175,8 @@ unsigned int Model::TextureFromFile(const char* path, const std::string& directo
     return textureID;
 }
 
-std::vector<Mesh>* Model::getMeshes() {
-    return &meshes;
+std::vector<Mesh>& Model::getMeshes() {
+    return meshes;
 }
 
 float Model::getfurVertDist() {

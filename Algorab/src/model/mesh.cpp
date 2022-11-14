@@ -82,12 +82,12 @@ unsigned int Mesh::getVertexArray() {
 	return VAO;
 }
 
-std::vector<unsigned int>* Mesh::getIndices() {
-	return &indices;
+std::vector<unsigned int>& Mesh::getIndices() {
+	return indices;
 }
 
-std::vector<Texture>* Mesh::getTextures() {
-	return &textures;
+std::vector<Texture>& Mesh::getTextures() {
+	return textures;
 }
 
 /*void Mesh::createDefaultMesh() {
