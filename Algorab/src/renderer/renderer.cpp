@@ -174,7 +174,6 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
 
             texturedModelShader.setUInt(type + number, i);
         }
-        */
         //draw mesh
         //std::cout << i << std::endl;
         glBindVertexArray(modelMesh.getVertexArray());
