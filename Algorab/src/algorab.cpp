@@ -1,13 +1,17 @@
 #include "algorab.h"
 
 double deltaTime;
-float moveSpeed = 9999999999999999;
-Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false);
 
+float moveSpeed = 9999999999999999;
+//float moveSpeed = 99;
+Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false); //TODO: Change camera from being a global variable/change input functions
+
+//mouse input
 bool firstMouse = true;
 float mouseLastX = 800.0f / 2.0f;
 float mouseLastY = 600.0f / 2.0f;
 
+//performance variables
 bool performanceRunning = false;
 bool performanceCheck = false;
 
@@ -20,12 +24,15 @@ void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 }
 
 int main() {
+    //random distribution tools
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dist(-9999999999999999, 9999999999999999);
-    //std::uniform_real_distribution<> dist(-99, 99);
+    std::uniform_real_distribution<> dist(0, 9999999999999999);
+    //sstd::uniform_real_distribution<> dist(0, 99);
 
-    stbi_set_flip_vertically_on_load(true);
+
+
+    stbi_set_flip_vertically_on_load(true); //texture flip
 
     glfwInit();
 
@@ -38,18 +45,26 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     glfwWindowHint(GLFW_SAMPLES, 4); //TODO: Replace with offscreen anti-aliasing
-    
-    GLFWwindow* testing = glfwCreateWindow(800, 600, "testing", NULL, NULL);
-    if (testing == NULL) {
+
+
+    //window and context setup
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Window", NULL, NULL); //probably ought to abstract this out but fine for now
+    if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(testing);
-    glfwSwapInterval(0);
 
-    glfwSetInputMode(testing, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPosCallback(testing, mouse_callback);
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(0); //v-sync off
+
+
+
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);
+
+
 
     //load gl function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -57,9 +72,11 @@ int main() {
         return -1;
     }
 
+
+
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW); //due to different coordinate systems
-    //glEnable(GL_MULTISAMPLE);
+    glEnable(GL_MULTISAMPLE);
 
 #ifdef _DEBUG
     //enable debug output
@@ -69,6 +86,7 @@ int main() {
 #endif // DEBUG
 
 
+    //Camera setup
     //Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false);
     mainCam.setProjectionFrustum(70, 800.0f / 600.0f, 100, 100000, true);
     mainCam.updateProjectionMatrix();
@@ -76,10 +94,15 @@ int main() {
     RenderTarget mainRenderTarget;
     Renderer mainRenderer(&mainCam, mainRenderTarget);
 
+
+
+    //model importing
     Assimp::Importer modelImporter;
 
+    //test model
     Model backpackModel("assets/models/backpack/backpack.obj");
     
+    //bunch of test entities
     std::vector<ModelEntity*> bpEnts;
     //ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
     ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 10.0f), 1.0f);
@@ -109,8 +132,16 @@ int main() {
         bp->setScale(glm::length(bp->getPosition()) * (1.0f / 10.0f));
     }
 
-    const float radius = 10.0f;
 
+    //variables for testing
+    const float radius = 10.0f;
+    unsigned int counter = 0;
+    unsigned int zPos = 0;
+    const float moveStep = 10000.0f;
+
+
+
+    //frame time stuff
     double lastTime = glfwGetTime();
     double currentTime;
     //double deltaTime;
@@ -118,14 +149,9 @@ int main() {
     double average = 0.0f;
     std::stringstream ss;
 
-    unsigned int counter = 0;
-    unsigned int zPos = 0;
-    const float moveStep = 10000.0f;
-
-    bool firstMouse = true;
-
     std::cout << "Starting" << std::endl;
-    while (!glfwWindowShouldClose(testing)) { //main loop        
+
+    while (!glfwWindowShouldClose(window)) { //main loop        
         //mainCam.setPosition(glm::vec3(sin(glfwGetTime()) * radius, 0.0f, cos(glfwGetTime()) * radius));
         //mainCam.lookAt(glm::vec3(0.0f, 0.0f, 0.0f)); //TODO: Add variants of setPosition and lookAt that don't use vec3
 
@@ -133,18 +159,22 @@ int main() {
         //mainCam.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep - 5.0f));
         //backpackEntity.setScale(zPos * moveStep / 10);
 
-        processInput(testing);
+
+
+        processInput(window);
 
         mainCam.updateRelativeViewMatrix();
 
-        
         for (ModelEntity* bp : bpEnts) {
             mainRenderer.PushEntity(bp);
         }
         mainRenderer.renderAllPushed();
 
-        glfwSwapBuffers(testing);
+        glfwSwapBuffers(window);
         glfwPollEvents();
+
+
+
 
         currentTime = glfwGetTime();
         deltaTime = currentTime - lastTime;
@@ -157,9 +187,9 @@ int main() {
         average = (average * (counter - 1) + fps) / counter;
         if (counter >= 20) {
             ss.str(std::string());
-            //ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (zPos * moveStep);
+            ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (zPos * moveStep);
             //ss << "[" << mainCam.getPosition().x << ", " << mainCam.getPosition().y << ", " << mainCam.getPosition().z << "]";
-            //glfwSetWindowTitle(testing, ss.str().c_str());
+            glfwSetWindowTitle(window, ss.str().c_str());
             //std::cout << fps << std::endl;
             counter = 0;
             average = 0.0f;
@@ -175,7 +205,7 @@ int main() {
                     //std::cout << "Average frame time: " << performanceTotal / performanceIts << "(Average FPS: " << performanceIts / performanceTotal << ")" << std::endl;
                     ss.str(std::string());
                     ss << "Average frame time: " << performanceTotal / performanceIts << "(Average FPS: " << performanceIts / performanceTotal << ")";
-                    glfwSetWindowTitle(testing, ss.str().c_str());
+                    glfwSetWindowTitle(window, ss.str().c_str());
                 } else {
                     std::cout << "Performance ran for 0 iterations" << std::endl;
                 }
@@ -260,20 +290,3 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
     mainCam.turn(offsetX * 0.25, offsetY * 0.25, true); //TODO: Add sensitivity
 }
-
-
-//finish mesh
-//vertex array, buffer and element abstraction?
-//texture abstraction
-//coordinates
-// model
-//      mesh
-// renderer
-//      give target
-//          given meshes/points, render to target
-// entity
-//      translate
-//          x,y,z, scale (future coords)
-// 
-// 
-//

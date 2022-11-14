@@ -15,7 +15,7 @@
 #include <iostream>
 #include <random>
 
-float screenTextureVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+float screenTextureVertices[] = { //for rendering to a screen texture
         // positions   // texCoords
         -1.0f,  1.0f,  0.0f, 1.0f,
         -1.0f, -1.0f,  0.0f, 0.0f,

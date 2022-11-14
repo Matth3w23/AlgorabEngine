@@ -1,6 +1,7 @@
 #include "renderer.h"
 
 void Renderer::renderAllPushed() {
+    drawCalls = 0;
     clearAllBuckets();
 
     viewMat = *(currentCamera->getRelativeViewMatrix());
@@ -62,11 +63,6 @@ void Renderer::renderAllPushed() {
         renderBucket(it->first, it->second);
     }
 
-
-
-
-
-    drawCalls = 0;
     //glBindFramebuffer(GL_FRAMEBUFFER, target.getFrameBuffer());
 
     
@@ -135,7 +131,8 @@ void Renderer::renderAllPushed() {
     //bind current texture to texture colour buffer
 
 #ifdef _DEBUG
-    //std::cout << "Draw Calls: " << drawCalls << std::endl;
+    std::cout << "Draw Calls: " << drawCalls << std::endl;
+    std::cout << "------------" << std::endl;
 #endif // DEBUG    
 }
 
@@ -153,10 +150,10 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
     modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
     texturedModelShader.setMat4("model", modelMat);
 
-    for (Mesh modelMesh : *(modelEnt->getModel()->getMeshes())) {
+    for (Mesh& modelMesh : *(modelEnt->getModel()->getMeshes())) {
         i++;
         //load textures and set uniforms
-        std::vector<Texture> textures = *(modelMesh.getTextures());
+        std::vector<Texture>& textures = *(modelMesh.getTextures());
         unsigned int diffuseNum = 1;
 
         //std::cout << textures.size() << std::endl;
