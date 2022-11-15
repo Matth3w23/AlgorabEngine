@@ -22,18 +22,20 @@
 
 class Renderer {
 private:
+	unsigned int screenVAO, screenVBO;
+
 	unsigned int drawCalls = 0;
 	glm::vec3 posDiff;
 
 	std::vector<unsigned int> loadedTextures; //stores id's of textures already loaded in
 
-	std::map<unsigned int, std::vector<ModelEntity*>> buckets;
+	std::map<unsigned int, RenderTarget> buckets;
 
 	const float bucketScale = 100.0f; //scale between the near plane and the far plane in bucket
 	double bucketScaleLog = std::log(bucketScale);
 	const float minimumCutOff = 0.1f; //otherwise
 
-	RenderTarget& target; //target framebuffer
+	RenderTarget& target; //main target framebuffer
 	Camera* currentCamera;
 	std::vector<ModelEntity*> modelEntsToRender = {};
 	std::vector<PointEntity*> pointsToRender = {};
@@ -43,7 +45,8 @@ private:
 	glm::mat4 viewMat;
 	glm::mat4 projMat;
 
-	void renderModelEntity(ModelEntity* modelEnt, float currentBucketScale = 1.0f);
+	void renderModelEntity(ModelEntity* modelEnd, unsigned int smallestBucket, unsigned int largestBucket);
+	//void renderModelEntity(ModelEntity* modelEnt, float currentBucketScale = 1.0f);
 	void renderPointEntity(PointEntity* pointEnt);
 	void renderBucket(unsigned int bucket, std::vector<ModelEntity*>& modEnts);
 
@@ -61,7 +64,7 @@ public:
 	void PushEntity(PointEntity& pEnt);
 
 	Renderer(Camera* cam, RenderTarget& tar);
-
 };
 
 //render texture
+

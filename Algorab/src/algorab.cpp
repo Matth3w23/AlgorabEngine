@@ -4,6 +4,7 @@ double deltaTime;
 
 float moveSpeed = 9999999999999999;
 //float moveSpeed = 99;
+//float moveSpeed = 1.0f;
 Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false); //TODO: Change camera from being a global variable/change input functions
 
 //mouse input
@@ -20,7 +21,7 @@ unsigned int performanceIts = 0;
 bool pDown = false;
 
 void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
-    std::cout << "OpenGL error:" << type << ", " << message << std::endl;
+    std::cout << "OpenGL error[" << severity << "]" << ": " << type << ", " << message << std::endl;
 }
 
 int main() {
@@ -77,6 +78,8 @@ int main() {
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW); //due to different coordinate systems
     glEnable(GL_MULTISAMPLE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #ifdef _DEBUG
     //enable debug output
@@ -105,7 +108,7 @@ int main() {
     //bunch of test entities
     std::vector<ModelEntity*> bpEnts;
     //ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
-    ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 10.0f), 1.0f);
+    ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 1.0f), 1.0f);
     ModelEntity backpackEntityA(&backpackModel, glm::vec3(5.0f, 0.0f, 10.0f), 0.3f);
     ModelEntity backpackEntity1(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity2(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
