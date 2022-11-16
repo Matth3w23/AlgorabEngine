@@ -13,11 +13,6 @@ class Model {
 private:
 	std::vector<Mesh> meshes;
 
-	unsigned int modelVAO, modelVBO, modelEBO;
-	std::vector<TexturedVertex> modelTexVertices;
-	std::vector<unsigned int> indices;
-	std::vector<Texture> textures = {};
-
 	float furthestVertexDist = 0.0f;
 
 	bool currentlyDefault;

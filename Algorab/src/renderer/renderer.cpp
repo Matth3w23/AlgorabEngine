@@ -2,7 +2,6 @@
 
 void Renderer::renderAllPushed() {
     drawCalls = 0;
-    modelDraws = 0;
     clearAllBuckets(); //Needs changing
 
     currentCamera->setNearPlane(1.0f); //TODO: clean up, camera should always have this near/far plane (or the renderer should control it)
@@ -41,36 +40,46 @@ void Renderer::renderAllPushed() {
         largestBucket = std::floor(std::log(max / minimumCutOff) / bucketScaleLog);
         //std::cout << "TEST: " << smallestBucket << ", " << largestBucket << std::endl;
 
-        /*for (int i = smallestBucket; i <= largestBucket; i++) {
+        for (int i = smallestBucket; i <= largestBucket; i++) {
             //std::cout << "BUCKET: " << i << std::endl;
             if (buckets.count(i) == 0) { //if the bucket doesn't exist yet
                 buckets.insert({ i, RenderTarget(800, 600)});
-                std::cout << i << std::endl;
             }
-        }*/
+
+            //buckets[i].push_back(modEnt);
+        }
 
         renderModelEntity(modEnt, smallestBucket, largestBucket);
+        //represent buckets as 'i' and frame buffer instead
 
     }
     modelEntsToRender = {};
 
-    /*for (PointEntity pEnt : pointsToRender) {
-       renderPointEntity(pEnt);
-   }*/
-    pointsToRender = {};
 
     //draw all bucket framebuffers/textures
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); //TODO: Change to render to target then render target to screen
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0); //TODO: Change to render to target then render target to screen
+    
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glEnable(GL_DEPTH_TEST);
+
+    
+
+
+
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glActiveTexture(GL_TEXTURE0);
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     for (auto it = buckets.rbegin(); it != buckets.rend(); it++) {
+        //renderBucket(it->first, it->second);
         screenShader.use();
         glBindVertexArray(screenVAO);
-
-        glBindTexture(GL_TEXTURE_2D, it->second.getTextureBuffer()); //TODO: Maybe only render texture if it has been rendered to this frame?
+        
+        
+        glBindTexture(GL_TEXTURE_2D, it->second.getTextureBuffer());
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
     glEnable(GL_DEPTH_TEST);
@@ -78,7 +87,33 @@ void Renderer::renderAllPushed() {
 
     //glBindFramebuffer(GL_FRAMEBUFFER, target.getFrameBuffer());
 
-    //debugging stuff
+    
+    
+
+    /*float plane = minimumCutOff;
+    std::cout << "LOOP" << std::endl;
+    for (int i = 0; i < 10; i++) {
+
+        //std::cout << "TEST: ";
+        currentCamera->setNearPlane(plane);
+        //std::cout << plane << ", ";
+        plane *= 100;
+        currentCamera->setFarPlane(plane);
+        //std::cout << plane << std::endl;
+        currentCamera->updateProjectionMatrix();
+        projMat = *(currentCamera->getProjectionMatrix());
+
+        texturedModelShader.setMat4("projection", projMat);
+        for (ModelEntity* modEnt : modelEntsToRender) {
+            renderModelEntity(modEnt);
+        }
+    }*/
+
+    /*for (PointEntity pEnt : pointsToRender) {
+        renderPointEntity(pEnt);
+    }*/
+    pointsToRender = {};
+
     /*float vertices[] = {
             -0.5f, -0.5f, 0.0f,
             0.5f, -0.5f, 0.0f,
@@ -109,29 +144,26 @@ void Renderer::renderAllPushed() {
 
 #ifdef _DEBUG
     std::cout << "Draw Calls: " << drawCalls << std::endl;
-    //std::cout << "Model Draws: " << modelDraws << std::endl;
-    //std::cout << "------------" << std::endl;
+    std::cout << "------------" << std::endl;
 #endif // DEBUG    
 }
 
 
 void Renderer::renderModelEntity(ModelEntity* modelEnt, unsigned int smallestBucket, unsigned int largestBucket) {
-    //std::cout << "MODEL" << std::endl;
-    modelDraws++;
-
     float currentBucketScale = 0.0f;
-    modelMatrices = {};
-
-    modelMatGeneral = glm::mat4(1.0f);
-    scales = {};
-    modelMatGeneral = glm::translate(modelMatGeneral, (modelEnt->getPosition() - currentCamera->getPosition())); //camera relative world position
-    modelMatGeneral = glm::scale(modelMatGeneral, glm::vec3(modelEnt->getScale()));
-
-    texturedModelShader.setMat4("model", modelMatGeneral);
+    std::vector<glm::mat4> modelMatrices = {};
 
     for (unsigned int bNum = smallestBucket; bNum <= largestBucket; bNum++) {
         currentBucketScale = 1 / (minimumCutOff * (std::pow(bucketScale, bNum)));
-        scales.push_back(currentBucketScale);
+
+        modelMat = glm::mat4(1.0f);
+        posDiff = modelEnt->getPosition() - currentCamera->getPosition();
+        modelMat = glm::translate(modelMat, (modelEnt->getPosition() - currentCamera->getPosition()) * currentBucketScale); //camera relative world position
+        modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
+
+        modelMatrices.push_back(modelMat); //will have to create multiple times unfortunately
+
+        //send current bucket scale separately then do vertex shader stuff?
     }
 
 
@@ -140,8 +172,7 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, unsigned int smallestBuc
     for (Mesh& modelMesh : modelEnt->getModel()->getMeshes()) {
 
         //load textures and set uniforms
-        //std::vector<Texture>& textures = modelMesh.getTextures();
-        std::vector<Texture> textures = {};
+        std::vector<Texture>& textures = modelMesh.getTextures();
         unsigned int diffuseNum = 1;
 
 
@@ -165,11 +196,8 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, unsigned int smallestBuc
 
         glBindVertexArray(modelMesh.getVertexArray());
         for (unsigned int bNum = smallestBucket; bNum <= largestBucket; bNum++) {
-            //std::cout << "BUCKETNUM: " << bNum << ", Scale: " << scales[bNum - smallestBucket] << std::endl;
-            //std::cout << "ModelMat: " << glm::to_string(modelMatGeneral);
-            texturedModelShader.setFloat("scale", scales[bNum - smallestBucket]);
+            texturedModelShader.setMat4("model", modelMatrices[bNum-smallestBucket]); //not good, may need to send model matrices to shader via vertex buffers?
             glBindFramebuffer(GL_FRAMEBUFFER, buckets[bNum].getFrameBuffer());
-            //drawCalls += buckets[bNum].getFrameBuffer();
             //glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glDrawElements(GL_TRIANGLES, modelMesh.getIndices().size(), GL_UNSIGNED_INT, 0);
             drawCalls++;
@@ -189,9 +217,86 @@ void Renderer::clearAllBuckets() { //clears all models pushed to buckets
     }
 }
 
+/*void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale) { //will need to change from float to unlimited number
+#ifdef DEBUG
+    std::cout << "renderModelEntity" << std::endl;
+#endif // DEBUG
+
+    int i = 0;
+    std::string number;
+
+    modelMat = glm::mat4(1.0f);
+    posDiff = modelEnt->getPosition() - currentCamera->getPosition();
+    //std::cout << "[" << posDiff.x << "," << posDiff.y << "," << posDiff.z << "]" << std::endl;
+    modelMat = glm::translate(modelMat, (modelEnt->getPosition()-currentCamera->getPosition()) * currentBucketScale); //camera relative world position
+    modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
+    texturedModelShader.setMat4("model", modelMat);
+
+    
+    
+    for (Mesh& modelMesh : modelEnt->getModel()->getMeshes()) {
+        
+        i++;
+        
+        //load textures and set uniforms
+        std::vector<Texture>& textures = modelMesh.getTextures();
+        unsigned int diffuseNum = 1;
+        
+
+        //std::cout << textures.size() << std::endl;
+        for (unsigned int i = 0; i < textures.size(); i++) {
+            //std::cout << "LOG: SETTING TEXTURE UNIFORM" << std::endl;
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, textures[i].id);
+
+            std::string& type = textures[i].type;
+            number = "";
+
+            if (type == "texture_diffuse") {
+                number = std::to_string(diffuseNum);
+                diffuseNum += 1;
+            } else {
+                std::cout << "Error: Unsupported texture type: " << type << std::endl;
+            }
+
+            texturedModelShader.setUInt(type + number, i);
+        }
+        //draw mesh
+        //std::cout << i << std::endl;
+        glBindVertexArray(modelMesh.getVertexArray());
+        glDrawElements(GL_TRIANGLES, modelMesh.getIndices().size(), GL_UNSIGNED_INT, 0);
+        drawCalls++;
+        //glBindVertexArray(0);
+    }
+}
+
+void Renderer::renderBucket(unsigned int bucketNum, std::vector<ModelEntity*>& modEnts) {
+    //work out scale for bucket
+    //scale between 1 and 1*bucketscale?
+    //same as renderModelEntity but transform/model matrix affected by bucket scale
+    glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    float currentBucketScale = 1 / (minimumCutOff * (std::pow(bucketScale, bucketNum)));
+
+    for (ModelEntity* modEnt : modEnts) {
+        renderModelEntity(modEnt, currentBucketScale);
+    }
+}
+
+void Renderer::clearAllBuckets() { //clears all models pushed to buckets
+    for (auto it = buckets.begin(); it != buckets.end(); it++) {
+        it->second.clear();
+    }
+}
+*/
+
 void Renderer::renderPointEntity(PointEntity* pointEnt) {
     ;
 }
+
+
+
+
 
 Camera* Renderer::getCurrentCamera() {
     return currentCamera;
@@ -243,16 +348,6 @@ Renderer::Renderer(Camera* cam, RenderTarget& tar) :
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-
-
-    for (int i = 0; i <= 16; i++) {
-        //std::cout << "BUCKET: " << i << std::endl;
-        if (buckets.count(i) == 0) { //if the bucket doesn't exist yet
-            buckets.insert({ i, RenderTarget(800, 600, true) });
-            std::cout << i << std::endl;
-        }
-    }
 }
 
 

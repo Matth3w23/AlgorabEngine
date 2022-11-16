@@ -1,15 +1,15 @@
 #include "render_target.h"
 
-RenderTarget::RenderTarget(unsigned int w, unsigned int h, bool simple) :
+RenderTarget::RenderTarget(unsigned int w, unsigned int h) :
     width(w), height(h) {
     glGenFramebuffers(1, &frameBuffer);
     glGenTextures(1, &textureBuffer);
     glGenRenderbuffers(1, &renderBuffer);
-    setUpRenderTarget(simple);
+    setUpRenderTarget();
 
 }
 
-void RenderTarget::setUpRenderTarget(bool simple) {
+void RenderTarget::setUpRenderTarget() {
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 
     glBindTexture(GL_TEXTURE_2D, textureBuffer);
@@ -21,13 +21,7 @@ void RenderTarget::setUpRenderTarget(bool simple) {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureBuffer, 0);
 
     glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
-
-    if (simple) {
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
-    } else {
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
-    }
-
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);

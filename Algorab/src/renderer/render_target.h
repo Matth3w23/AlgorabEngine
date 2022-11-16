@@ -11,8 +11,8 @@ private:
 	unsigned int width;
 	unsigned int height;
 public:
-	RenderTarget(unsigned int w = 800, unsigned int h = 600, bool simple = false);
-	void setUpRenderTarget(bool simple = false);
+	RenderTarget(unsigned int w = 800, unsigned int h = 600);
+	void setUpRenderTarget();
 
 	void setTargetDimensions(unsigned int w = 800, unsigned int h = 600);
 	
