@@ -2,20 +2,12 @@
 
 void Renderer::renderAllPushed() {
     drawCalls = 0;
-    clearAllBuckets(); //Needs changing
-
-    currentCamera->setNearPlane(1.0f); //TODO: clean up, camera should always have this near/far plane (or the renderer should control it)
-    currentCamera->setFarPlane(1.0f * bucketScale);
-    currentCamera->updateProjectionMatrix();
+    clearAllBuckets();
 
     viewMat = currentCamera->getRelativeViewMatrix();
     projMat = currentCamera->getProjectionMatrix();
 
-    texturedModelShader.use();
-    texturedModelShader.setMat4("view", viewMat);
-    texturedModelShader.setMat4("projection", projMat);
-
-    //get object buckets
+    //sort into buckets
     float dist;
     float min;
     float max;
@@ -43,47 +35,36 @@ void Renderer::renderAllPushed() {
         for (int i = smallestBucket; i <= largestBucket; i++) {
             //std::cout << "BUCKET: " << i << std::endl;
             if (buckets.count(i) == 0) { //if the bucket doesn't exist yet
-                buckets.insert({ i, RenderTarget(800, 600)});
+                buckets.insert({ i, std::vector<ModelEntity*>()});
             }
 
-            //buckets[i].push_back(modEnt);
+            buckets[i].push_back(modEnt);
         }
 
-        renderModelEntity(modEnt, smallestBucket, largestBucket);
+        //renderModelEntity(modEnt, smallBuck, largeBuck)
         //represent buckets as 'i' and frame buffer instead
 
     }
-    modelEntsToRender = {};
 
 
-    //draw all bucket framebuffers/textures
-    //glBindFramebuffer(GL_FRAMEBUFFER, 0); //TODO: Change to render to target then render target to screen
-    
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //glEnable(GL_DEPTH_TEST);
-
-    
-
-
-
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
+    //from largest bucket to smallest
+    //scale down and draw
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); //TODO: Change to render to target then render target to screen
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
-    glActiveTexture(GL_TEXTURE0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    for (auto it = buckets.rbegin(); it != buckets.rend(); it++) {
-        //renderBucket(it->first, it->second);
-        screenShader.use();
-        glBindVertexArray(screenVAO);
-        
-        
-        glBindTexture(GL_TEXTURE_2D, it->second.getTextureBuffer());
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+
+    currentCamera->setNearPlane(1.0f); //TODO: clean up, camera should always have this near/far plane (or the renderer should control it)
+    currentCamera->setFarPlane(1.0f * bucketScale);
+    currentCamera->updateProjectionMatrix();
+
+    texturedModelShader.use();
+    texturedModelShader.setMat4("view", viewMat);
+    texturedModelShader.setMat4("projection", projMat);
+
+    for (auto it = buckets.rbegin(); it != buckets.rend(); it++) {
+        renderBucket(it->first, it->second);
+    }
 
     //glBindFramebuffer(GL_FRAMEBUFFER, target.getFrameBuffer());
 
@@ -108,6 +89,7 @@ void Renderer::renderAllPushed() {
             renderModelEntity(modEnt);
         }
     }*/
+    modelEntsToRender = {};
 
     /*for (PointEntity pEnt : pointsToRender) {
         renderPointEntity(pEnt);
@@ -148,76 +130,7 @@ void Renderer::renderAllPushed() {
 #endif // DEBUG    
 }
 
-
-void Renderer::renderModelEntity(ModelEntity* modelEnt, unsigned int smallestBucket, unsigned int largestBucket) {
-    float currentBucketScale = 0.0f;
-    std::vector<glm::mat4> modelMatrices = {};
-
-    for (unsigned int bNum = smallestBucket; bNum <= largestBucket; bNum++) {
-        currentBucketScale = 1 / (minimumCutOff * (std::pow(bucketScale, bNum)));
-
-        modelMat = glm::mat4(1.0f);
-        posDiff = modelEnt->getPosition() - currentCamera->getPosition();
-        modelMat = glm::translate(modelMat, (modelEnt->getPosition() - currentCamera->getPosition()) * currentBucketScale); //camera relative world position
-        modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
-
-        modelMatrices.push_back(modelMat); //will have to create multiple times unfortunately
-
-        //send current bucket scale separately then do vertex shader stuff?
-    }
-
-
-    //load model textures
-    std::string number;
-    for (Mesh& modelMesh : modelEnt->getModel()->getMeshes()) {
-
-        //load textures and set uniforms
-        std::vector<Texture>& textures = modelMesh.getTextures();
-        unsigned int diffuseNum = 1;
-
-
-        //std::cout << textures.size() << std::endl;
-        for (unsigned int i = 0; i < textures.size(); i++) {
-            glActiveTexture(GL_TEXTURE0 + i);
-            glBindTexture(GL_TEXTURE_2D, textures[i].id);
-
-            std::string& type = textures[i].type;
-            number = "";
-
-            if (type == "texture_diffuse") {
-                number = std::to_string(diffuseNum);
-                diffuseNum += 1;
-            } else {
-                std::cout << "Error: Unsupported texture type: " << type << std::endl;
-            }
-
-            texturedModelShader.setUInt(type + number, i);
-        }
-
-        glBindVertexArray(modelMesh.getVertexArray());
-        for (unsigned int bNum = smallestBucket; bNum <= largestBucket; bNum++) {
-            texturedModelShader.setMat4("model", modelMatrices[bNum-smallestBucket]); //not good, may need to send model matrices to shader via vertex buffers?
-            glBindFramebuffer(GL_FRAMEBUFFER, buckets[bNum].getFrameBuffer());
-            //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glDrawElements(GL_TRIANGLES, modelMesh.getIndices().size(), GL_UNSIGNED_INT, 0);
-            drawCalls++;
-            //std::cout << "DRAWN" << std::endl;
-        }
-    }
-
-
-    //render the entity to each bucket
-}
-
-void Renderer::clearAllBuckets() { //clears all models pushed to buckets
-    for (auto it = buckets.begin(); it != buckets.end(); it++) {
-        glBindFramebuffer(GL_FRAMEBUFFER, it->second.getFrameBuffer());
-        glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
-}
-
-/*void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale) { //will need to change from float to unlimited number
+void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale) { //will need to change from float to unlimited number
 #ifdef DEBUG
     std::cout << "renderModelEntity" << std::endl;
 #endif // DEBUG
@@ -270,6 +183,10 @@ void Renderer::clearAllBuckets() { //clears all models pushed to buckets
     }
 }
 
+void Renderer::renderPointEntity(PointEntity* pointEnt) {
+    ;
+}
+
 void Renderer::renderBucket(unsigned int bucketNum, std::vector<ModelEntity*>& modEnts) {
     //work out scale for bucket
     //scale between 1 and 1*bucketscale?
@@ -277,7 +194,7 @@ void Renderer::renderBucket(unsigned int bucketNum, std::vector<ModelEntity*>& m
     glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
     glClear(GL_DEPTH_BUFFER_BIT);
     float currentBucketScale = 1 / (minimumCutOff * (std::pow(bucketScale, bucketNum)));
-
+    
     for (ModelEntity* modEnt : modEnts) {
         renderModelEntity(modEnt, currentBucketScale);
     }
@@ -288,15 +205,6 @@ void Renderer::clearAllBuckets() { //clears all models pushed to buckets
         it->second.clear();
     }
 }
-*/
-
-void Renderer::renderPointEntity(PointEntity* pointEnt) {
-    ;
-}
-
-
-
-
 
 Camera* Renderer::getCurrentCamera() {
     return currentCamera;
@@ -327,27 +235,6 @@ Renderer::Renderer(Camera* cam, RenderTarget& tar) :
     modelMat = glm::mat4(1.0f);
     viewMat = currentCamera->getViewMatrix();
     projMat = currentCamera->getProjectionMatrix();
-
-    float screenTextureVertices[] = { //for rendering to a screen texture
-        // positions   // texCoords
-        -1.0f,  1.0f,  0.0f, 1.0f,
-        -1.0f, -1.0f,  0.0f, 0.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-
-        -1.0f,  1.0f,  0.0f, 1.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-         1.0f,  1.0f,  1.0f, 1.0f
-    };
-
-    glGenVertexArrays(1, &screenVAO);
-    glGenBuffers(1, &screenVBO);
-    glBindVertexArray(screenVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(screenTextureVertices), &screenTextureVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 }
 
 
