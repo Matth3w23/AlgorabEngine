@@ -4,7 +4,7 @@ Model::Model(std::string path) {
     addModel(path);
 }
 
-Model::Model(std::vector<Mesh>& mshs) :
+Model::Model(std::vector<Mesh>& mshs) : //not supported/correct
     meshes(mshs) {
     currentlyDefault = false;
 }

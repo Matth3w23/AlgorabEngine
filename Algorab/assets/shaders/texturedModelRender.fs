@@ -9,5 +9,5 @@ uniform sampler2D texture_diffuse1; //check if models have more than one diffuse
 void main()
 {    
     FragColour = texture(texture_diffuse1, TexCoords);
-    //FragColour = vec4(1.0, 0.5, 0.5, 1.0);
+    FragColour = vec4(1.0, 0.5, 0.5, 1.0);
 }

@@ -25,11 +25,16 @@ private:
 	unsigned int screenVAO, screenVBO;
 
 	unsigned int drawCalls = 0;
+	unsigned int modelDraws = 0;
 	glm::vec3 posDiff;
 
 	std::vector<unsigned int> loadedTextures; //stores id's of textures already loaded in
 
 	std::map<unsigned int, RenderTarget> buckets;
+
+	std::vector<glm::mat4> modelMatrices = {};
+	glm::mat4 modelMatGeneral = glm::mat4(1.0f);
+	std::vector<float> scales = {};
 
 	const float bucketScale = 100.0f; //scale between the near plane and the far plane in bucket
 	double bucketScaleLog = std::log(bucketScale);
@@ -48,7 +53,6 @@ private:
 	void renderModelEntity(ModelEntity* modelEnd, unsigned int smallestBucket, unsigned int largestBucket);
 	//void renderModelEntity(ModelEntity* modelEnt, float currentBucketScale = 1.0f);
 	void renderPointEntity(PointEntity* pointEnt);
-	void renderBucket(unsigned int bucket, std::vector<ModelEntity*>& modEnts);
 
 	void clearAllBuckets();
 public:

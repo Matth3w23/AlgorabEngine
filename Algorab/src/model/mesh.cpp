@@ -5,28 +5,6 @@ Mesh::Mesh(std::vector<TexturedVertex> vrtcs, std::vector<unsigned int> indcs, s
 	textured = true;
 	setupMesh();
 }
-Mesh::Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, std::vector<glm::vec4> clrs) : //TODO: complete coloured mesh constructors
-	colVertices(vrtcs), indices(indcs), colours(clrs) {
-	
-	textured = false;
-	setupMesh();
-}
-Mesh::Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, std::vector<glm::vec3> clrs) : //remember to update colour format
-	colVertices(vrtcs), indices(indcs) {
-	textured = false;
-	setupMesh();
-}
-
-Mesh::Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, glm::vec4 colour) :
-	colVertices(vrtcs), indices(indcs) {
-	textured = false;
-	setupMesh();
-}
-Mesh::Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, glm::vec3 colour) :
-	colVertices(vrtcs), indices(indcs) {
-	textured = false;
-	setupMesh();
-}
 
 void Mesh::setupMesh() {
 #ifdef _DEBUG
@@ -57,6 +35,8 @@ void Mesh::setupMesh() {
 
 		glBindVertexArray(0);
 		
+
+
 	} else {
 		//start of passing data in
 		glBindVertexArray(VAO);
@@ -107,4 +87,27 @@ std::vector<Texture>& Mesh::getTextures() {
 	std::vector<glm::vec3> clrs(24, glm::vec3(0.5f, 0.5f, 0.5f));
 	
 	defaultMesh.colVertices
+}*/
+
+/*Mesh::Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, std::vector<glm::vec4> clrs) : //TODO: complete coloured mesh constructors
+	colVertices(vrtcs), indices(indcs), colours(clrs) {
+
+	textured = false;
+	setupMesh();
+}
+Mesh::Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, std::vector<glm::vec3> clrs) : //remember to update colour format
+	colVertices(vrtcs), indices(indcs) {
+	textured = false;
+	setupMesh();
+}
+
+Mesh::Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, glm::vec4 colour) :
+	colVertices(vrtcs), indices(indcs) {
+	textured = false;
+	setupMesh();
+}
+Mesh::Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, glm::vec3 colour) :
+	colVertices(vrtcs), indices(indcs) {
+	textured = false;
+	setupMesh();
 }*/

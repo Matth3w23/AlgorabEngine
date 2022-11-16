@@ -4,7 +4,7 @@ double deltaTime;
 
 float moveSpeed = 9999999999999999;
 //float moveSpeed = 99;
-//float moveSpeed = 1.0f;
+//float moveSpeed = 10.0f;
 Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false); //TODO: Change camera from being a global variable/change input functions
 
 //mouse input
@@ -104,11 +104,12 @@ int main() {
 
     //test model
     Model backpackModel("assets/models/backpack/backpack.obj");
+    Model spaceShipModel("assets/models/spaceship/model.dae");
     
     //bunch of test entities
     std::vector<ModelEntity*> bpEnts;
     //ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
-    ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 1.0f), 1.0f);
+    /*ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 1.0f), 1.0f);
     ModelEntity backpackEntityA(&backpackModel, glm::vec3(5.0f, 0.0f, 10.0f), 0.3f);
     ModelEntity backpackEntity1(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity2(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
@@ -133,8 +134,10 @@ int main() {
     bpEnts.push_back(&backpackEntity9);
     for (ModelEntity* bp : bpEnts) {
         bp->setScale(glm::length(bp->getPosition()) * (1.0f / 10.0f));
-    }
+    }*/
 
+    ModelEntity spaceShipEntity(&spaceShipModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    spaceShipEntity.setScale(glm::length(spaceShipEntity.getPosition()) * (1.0f / 10.0f));
 
     //variables for testing
     const float radius = 10.0f;
@@ -154,7 +157,8 @@ int main() {
 
     std::cout << "Starting" << std::endl;
 
-    while (!glfwWindowShouldClose(window)) { //main loop        
+    while (!glfwWindowShouldClose(window)) { //main loop
+        //std::cout << "FRAME******************************************************************" << std::endl;
         //mainCam.setPosition(glm::vec3(sin(glfwGetTime()) * radius, 0.0f, cos(glfwGetTime()) * radius));
         //mainCam.lookAt(glm::vec3(0.0f, 0.0f, 0.0f)); //TODO: Add variants of setPosition and lookAt that don't use vec3
 
@@ -171,6 +175,7 @@ int main() {
         for (ModelEntity* bp : bpEnts) {
             mainRenderer.PushEntity(*bp);
         }
+        mainRenderer.PushEntity(spaceShipEntity);
         mainRenderer.renderAllPushed();
 
         glfwSwapBuffers(window);

@@ -35,10 +35,10 @@ private:
 	bool textured;
 public:
 	Mesh(std::vector<TexturedVertex> vrtcs, std::vector<unsigned int> indcs, std::vector<Texture> txtrs);
-	Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, std::vector<glm::vec4> clrs);
-	Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, std::vector<glm::vec3> clrs);
-	Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, glm::vec4 colour);
-	Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, glm::vec3 colour);
+	//Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, std::vector<glm::vec4> clrs);
+	//Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, std::vector<glm::vec3> clrs);
+	//Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, glm::vec4 colour);
+	//Mesh(std::vector<ColouredVertex> vrtcs, std::vector<unsigned int> indcs, glm::vec3 colour);
 
 	void setupMesh();
 
