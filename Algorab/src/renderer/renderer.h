@@ -22,14 +22,18 @@
 
 class Renderer {
 private:
+	bool textureSetTest = false;
+	unsigned int currentlySetTextureID;
+	unsigned int lastTextureUnitBoundTo = 15; //max is 16/index 15
+
 	unsigned int drawCalls = 0;
 	glm::vec3 posDiff;
 
-	std::vector<unsigned int> loadedTextures; //stores id's of textures already loaded in
+	std::vector<unsigned int> textureUnitCurrentIds; //stores id's of textures already loaded in
 
 	std::map<unsigned int, std::vector<ModelEntity*>> buckets;
 
-	const float bucketScale = 100.0f; //scale between the near plane and the far plane in bucket
+	const float bucketScale = 10000.0f; //scale between the near plane and the far plane in bucket
 	double bucketScaleLog = std::log(bucketScale);
 	const float minimumCutOff = 0.1f; //otherwise
 

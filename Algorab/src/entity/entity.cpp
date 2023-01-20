@@ -13,6 +13,9 @@ void Entity::setPosition(glm::vec3 pos) {
 	position = pos;
 }
 
+
+
+
 ModelEntity::ModelEntity(Model* mod, glm::vec3 pos, float scl) :
 	model(mod), scale(scl), Entity::Entity(pos){
 	;
@@ -37,6 +40,10 @@ void ModelEntity::setModel(Model* mod) {
 void ModelEntity::setScale(float scl) {
 	scale = scl;
 }
+
+
+
+
 
 PointEntity::PointEntity(glm::vec4 col, float rad, bool conScale) :
 	colour(col), radius(rad), constantScale(conScale) {

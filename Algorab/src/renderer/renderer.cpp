@@ -3,6 +3,8 @@
 void Renderer::renderAllPushed() {
     drawCalls = 0;
     clearAllBuckets();
+    textureSetTest = false;
+    currentlySetTextureID = -1; //currently just assuming I won't have loads of textures really
 
     viewMat = currentCamera->getRelativeViewMatrix();
     projMat = currentCamera->getProjectionMatrix();
@@ -55,7 +57,7 @@ void Renderer::renderAllPushed() {
     glEnable(GL_DEPTH_TEST);
 
     currentCamera->setNearPlane(1.0f); //TODO: clean up, camera should always have this near/far plane (or the renderer should control it)
-    currentCamera->setFarPlane(1.0f * bucketScale);
+    currentCamera->setFarPlane(1.1f * bucketScale);
     currentCamera->updateProjectionMatrix();
 
     texturedModelShader.use();
@@ -130,7 +132,22 @@ void Renderer::renderAllPushed() {
 #endif // DEBUG    
 }
 
-void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale) { //will need to change from float to unlimited number
+
+void Renderer::renderBucket(unsigned int bucketNum, std::vector<ModelEntity*>& modEnts) {
+    //work out scale for bucket
+    //scale between 1 and 1*bucketscale?
+    //same as renderModelEntity but transform/model matrix affected by bucket scale
+    glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    float currentBucketScale = 1 / (minimumCutOff * (std::pow(bucketScale, bucketNum)));
+
+    for (ModelEntity* modEnt : modEnts) {
+        renderModelEntity(modEnt, currentBucketScale);
+    }
+}
+
+
+void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale) { //will need to change from float to unlimited number?
 #ifdef DEBUG
     std::cout << "renderModelEntity" << std::endl;
 #endif // DEBUG
@@ -141,64 +158,74 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
     modelMat = glm::mat4(1.0f);
     posDiff = modelEnt->getPosition() - currentCamera->getPosition();
     //std::cout << "[" << posDiff.x << "," << posDiff.y << "," << posDiff.z << "]" << std::endl;
-    modelMat = glm::translate(modelMat, (modelEnt->getPosition()-currentCamera->getPosition()) * currentBucketScale); //camera relative world position
+    modelMat = glm::translate(modelMat, (posDiff) * currentBucketScale); //camera relative world position
     modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
     texturedModelShader.setMat4("model", modelMat);
 
-    
-    
+    //TODO: Work out/store model matrices separately, send scale to vertex shader at start, send model matrix every time (is this more efficient?)
     for (Mesh& modelMesh : modelEnt->getModel()->getMeshes()) {
-        
-        i++;
-        
-        //load textures and set uniforms
         std::vector<Texture>& textures = modelMesh.getTextures();
-        unsigned int diffuseNum = 1;
-        
 
-        //std::cout << textures.size() << std::endl;
-        for (unsigned int i = 0; i < textures.size(); i++) {
+        for (unsigned int i = 0; i < textures.size(); i++) { //for every texture
             //std::cout << "LOG: SETTING TEXTURE UNIFORM" << std::endl;
-            glActiveTexture(GL_TEXTURE0 + i);
-            glBindTexture(GL_TEXTURE_2D, textures[i].id);
 
             std::string& type = textures[i].type;
-            number = "";
+            number = "1"; //only one diffuse map fopr now
 
-            if (type == "texture_diffuse") {
-                number = std::to_string(diffuseNum);
-                diffuseNum += 1;
-            } else {
+            if (type != "texture_diffuse") { //check the texture is a diffuse map
                 std::cout << "Error: Unsupported texture type: " << type << std::endl;
             }
 
-            texturedModelShader.setUInt(type + number, i);
+            unsigned int texID = textures[i].id;
+
+            if (texID != currentlySetTextureID) {
+                //TODO: Set up texture cache
+
+                bool textureBound = false;
+                for (unsigned int j = 0; j < textureUnitCurrentIds.size(); j++) {
+                    if (textureUnitCurrentIds[j] == texID) {
+                        texturedModelShader.setUInt(type + number, j);
+                        
+                        textureBound = true;
+                    }
+                }
+
+                if (!textureBound) {
+                    lastTextureUnitBoundTo = (lastTextureUnitBoundTo + 1) % 16;
+                    glActiveTexture(GL_TEXTURE0 + lastTextureUnitBoundTo);
+                    glBindTexture(GL_TEXTURE_2D, texID);
+
+                    if (textureUnitCurrentIds.size() < lastTextureUnitBoundTo + 1) {
+                        textureUnitCurrentIds.push_back(texID);
+                    } else {
+                        textureUnitCurrentIds[lastTextureUnitBoundTo] = texID;
+                    }
+                    
+                }
+
+
+                currentlySetTextureID = texID;
+                
+                
+            }
+
+            glBindVertexArray(modelMesh.getVertexArray()); //TODO: Create a vertex array of all meshes
+            glDrawElements(GL_TRIANGLES, modelMesh.getIndices().size(), GL_UNSIGNED_INT, 0);
+            drawCalls++;
+            
         }
-        //draw mesh
-        //std::cout << i << std::endl;
-        glBindVertexArray(modelMesh.getVertexArray());
-        glDrawElements(GL_TRIANGLES, modelMesh.getIndices().size(), GL_UNSIGNED_INT, 0);
-        drawCalls++;
-        //glBindVertexArray(0);
+
     }
+        //std::cout << i << std::endl;
+        
+        //glBindVertexArray(0);
 }
 
 void Renderer::renderPointEntity(PointEntity* pointEnt) {
     ;
 }
 
-void Renderer::renderBucket(unsigned int bucketNum, std::vector<ModelEntity*>& modEnts) {
-    //work out scale for bucket
-    //scale between 1 and 1*bucketscale?
-    //same as renderModelEntity but transform/model matrix affected by bucket scale
-    glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    float currentBucketScale = 1 / (minimumCutOff * (std::pow(bucketScale, bucketNum)));
-    
-    for (ModelEntity* modEnt : modEnts) {
-        renderModelEntity(modEnt, currentBucketScale);
-    }
-}
+
 
 void Renderer::clearAllBuckets() { //clears all models pushed to buckets
     for (auto it = buckets.begin(); it != buckets.end(); it++) {
@@ -233,7 +260,7 @@ void Renderer::PushEntity(PointEntity& pEnt) {
 Renderer::Renderer(Camera* cam, RenderTarget& tar) :
     currentCamera(cam), target(tar) {
     modelMat = glm::mat4(1.0f);
-    viewMat = currentCamera->getViewMatrix();
+    viewMat = currentCamera->getRelativeViewMatrix();
     projMat = currentCamera->getProjectionMatrix();
 }
 

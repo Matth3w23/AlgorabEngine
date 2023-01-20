@@ -10,17 +10,14 @@
 #include <sstream>
 #include <iostream>
 
-class Shader { //from learnopengl
+class Shader { //adapted from
 public:
 	unsigned int ID;
 
-	Shader(std::string vertexPath, std::string fragmentPath) { //read and build
+	Shader(std::string vertexPath, std::string fragmentPath) {
 
-		//READ
-		std::string vertexCode;
-		std::string fragmentCode;
-		std::ifstream vertShaderFile;
-		std::ifstream fragShaderFile;
+		std::string vertexCode, fragmentCode;
+		std::ifstream vertShaderFile, fragShaderFile;
 
 		vertShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit); //ensure ifstream objects can throw exceptions
 		fragShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -28,16 +25,16 @@ public:
 		try {
 			vertShaderFile.open(vertexPath);
 			fragShaderFile.open(fragmentPath);
-			std::stringstream vertShaderStream, fragShaderStream;
+			std::stringstream vsStream, fsStream;
 
-			vertShaderStream << vertShaderFile.rdbuf();
-			fragShaderStream << fragShaderFile.rdbuf();
+			vsStream << vertShaderFile.rdbuf();
+			fsStream << fragShaderFile.rdbuf();
 
 			vertShaderFile.close();
 			fragShaderFile.close();
 
-			vertexCode = vertShaderStream.str();
-			fragmentCode = fragShaderStream.str();
+			vertexCode = vsStream.str();
+			fragmentCode = fsStream.str();
 
 		} catch (std::ifstream::failure e) {
 			std::cout << "Error: Shader file not successfully read" << std::endl;
@@ -117,9 +114,5 @@ public:
 	void setVec3(const std::string& name, glm::vec3& value) const {
 		use();
 		glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(value));
-	}
-	void setVec3(const std::string& name, float& x, float& y, float& z) const {
-		use();
-		glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
 	}
 };

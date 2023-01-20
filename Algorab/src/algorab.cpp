@@ -2,8 +2,8 @@
 
 double deltaTime;
 
-float moveSpeed = 9999999999999999;
-//float moveSpeed = 99;
+//float moveSpeed = 9999999999999999;
+float moveSpeed = 99;
 Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false); //TODO: Change camera from being a global variable/change input functions
 
 //mouse input
@@ -27,10 +27,8 @@ int main() {
     //random distribution tools
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dist(0, 9999999999999999);
+    std::uniform_real_distribution<> dist(-9999999999999999, 9999999999999999);
     //sstd::uniform_real_distribution<> dist(0, 99);
-
-
 
     stbi_set_flip_vertically_on_load(true); //texture flip
 
@@ -101,22 +99,24 @@ int main() {
 
     //test model
     Model backpackModel("assets/models/backpack/backpack.obj");
+    //Model spaceShuttleModel("assets/models/spaceShuttleGLTF/scene.gltf");
+    Model spaceShuttleModel("assets/models/backpack/backpack.obj");
     
     //bunch of test entities
     std::vector<ModelEntity*> bpEnts;
     //ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
     ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 10.0f), 1.0f);
-    ModelEntity backpackEntityA(&backpackModel, glm::vec3(5.0f, 0.0f, 10.0f), 0.3f);
+    ModelEntity backpackEntityA(&spaceShuttleModel, glm::vec3(5.0f, 0.0f, 3), 0.3f);
     ModelEntity backpackEntity1(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity2(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity2(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity3(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity4(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity4(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity5(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity6(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity6(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity7(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity8(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity8(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity10(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity10(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     bpEnts.push_back(&backpackEntity);
     bpEnts.push_back(&backpackEntityA);
     bpEnts.push_back(&backpackEntity1);
@@ -128,9 +128,23 @@ int main() {
     bpEnts.push_back(&backpackEntity7);
     bpEnts.push_back(&backpackEntity8);
     bpEnts.push_back(&backpackEntity9);
-    for (ModelEntity* bp : bpEnts) {
-        bp->setScale(glm::length(bp->getPosition()) * (1.0f / 10.0f));
-    }
+    bpEnts.push_back(&backpackEntity10);
+
+    /*for (int i = 0; i < 100; i++) {
+        ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+        bpEnts.push_back(test);
+    }*/
+
+    /*for (int i = 0; i <= 10; i++) {
+        ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3((i/10.0f) * pow(10, i), 0.0f, 1*pow(10,i)), 1.0f);
+        bpEnts.push_back(test);
+    }*/
+
+    /*for (ModelEntity* bp : bpEnts) {
+        float d = 10.0f;
+        //if (bp->getModel()->getMeshes().size() == spaceShuttleModel.getMeshes().size()) { d = 100.0; } //very scrappy, just for testing. Have way to check if same model?
+        bp->setScale(glm::length(bp->getPosition()) * (1.0f / d));
+    }*/
 
 
     //variables for testing
@@ -151,12 +165,13 @@ int main() {
 
     std::cout << "Starting" << std::endl;
 
-    while (!glfwWindowShouldClose(window)) { //main loop        
+    while (!glfwWindowShouldClose(window)) { //main loop
+
         //mainCam.setPosition(glm::vec3(sin(glfwGetTime()) * radius, 0.0f, cos(glfwGetTime()) * radius));
         //mainCam.lookAt(glm::vec3(0.0f, 0.0f, 0.0f)); //TODO: Add variants of setPosition and lookAt that don't use vec3
 
-        //backpackEntity.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep));
-        //mainCam.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep - 5.0f));
+        backpackEntity.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep));
+        mainCam.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep - 5.0f));
         //backpackEntity.setScale(zPos * moveStep / 10);
 
 
@@ -182,13 +197,13 @@ int main() {
         lastTime = currentTime;
 
         counter++;
-        //zPos++;
+        zPos++;
 
         average = (average * (counter - 1) + fps) / counter;
         if (counter >= 20) {
             ss.str(std::string());
             ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (zPos * moveStep);
-            //ss << "[" << mainCam.getPosition().x << ", " << mainCam.getPosition().y << ", " << mainCam.getPosition().z << "]";
+            ss << "[" << mainCam.getPosition().x << ", " << mainCam.getPosition().y << ", " << mainCam.getPosition().z << "]";
             glfwSetWindowTitle(window, ss.str().c_str());
             //std::cout << fps << std::endl;
             counter = 0;
@@ -202,7 +217,7 @@ int main() {
             if (!performanceCheck) { //just stopped performance
                 if (performanceIts > 0) {
                     performanceRunning = false;
-                    //std::cout << "Average frame time: " << performanceTotal / performanceIts << "(Average FPS: " << performanceIts / performanceTotal << ")" << std::endl;
+                    std::cout << "Average frame time: " << performanceTotal / performanceIts << "(Average FPS: " << performanceIts / performanceTotal << ")" << std::endl;
                     ss.str(std::string());
                     ss << "Average frame time: " << performanceTotal / performanceIts << "(Average FPS: " << performanceIts / performanceTotal << ")";
                     //glfwSetWindowTitle(window, ss.str().c_str());
