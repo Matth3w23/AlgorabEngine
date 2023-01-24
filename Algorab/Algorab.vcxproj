@@ -154,6 +154,7 @@
     <ClInclude Include="src\renderer\render_target.h" />
     <ClInclude Include="src\utility\element_buffer.h" />
     <ClInclude Include="src\utility\shader.h" />
+    <ClInclude Include="src\utility\unlimited_float.h" />
     <ClInclude Include="src\utility\vertex_array.h" />
     <ClInclude Include="src\utility\vertex_buffer.h" />
     <ClInclude Include="src\stb_image\stb_image.h" />
@@ -168,6 +169,7 @@
     <ClCompile Include="src\renderer\renderer.cpp" />
     <ClCompile Include="src\renderer\render_target.cpp" />
     <ClCompile Include="src\utility\element_buffer.cpp" />
+    <ClCompile Include="src\utility\unlimited_float.cpp" />
     <ClCompile Include="src\utility\vertex_buffer.cpp" />
     <ClCompile Include="src\stb_image\stb_image.cpp" />
   </ItemGroup>

@@ -11,9 +11,11 @@
 #include "renderer/renderer.h"
 #include "renderer/render_target.h"
 #include "entity/entity.h"
+#include "utility/unlimited_float.h"
 
 #include <iostream>
 #include <random>
+#include <string>
 
 float screenTextureVertices[] = { //for rendering to a screen texture
         // positions   // texCoords

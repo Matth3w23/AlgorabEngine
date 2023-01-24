@@ -51,6 +51,9 @@
     <ClInclude Include="src\renderer\render_target.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\utility\unlimited_float.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\stb_image\stb_image.cpp">
@@ -84,6 +87,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\renderer\render_target.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utility\unlimited_float.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

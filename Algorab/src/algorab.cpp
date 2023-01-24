@@ -24,6 +24,22 @@ void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 }
 
 int main() {
+    std::string testFloat = "-1111";
+    UFloat t1("-1111.567234367893476589457658943768547896");
+    UFloat t2("22222.456");
+    UFloat t3("1111.56723");
+    UFloat t4("3754893675893465897654897685497689547698547868934876.3728756436893432684872635465");
+    UFloat t5("-84359086785367398657438965348.2184764656");
+    std::cout << UFloat::uFloatToString(t1) << std::endl;
+    std::cout << UFloat::uFloatToString(t2) << std::endl;
+    std::cout << UFloat::uFloatToString(t3) << std::endl;
+    std::cout << UFloat::uFloatToString(UFloat::sum(t4, t5)) << std::endl;
+
+
+
+
+
+
     //random distribution tools
     std::random_device rd;
     std::mt19937 gen(rd());
