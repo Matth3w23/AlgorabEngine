@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
+#include <stdlib.h>
 #include <iostream>
 
 
@@ -20,10 +21,11 @@ public:
 
 	static UFloat sum(UFloat& num1, UFloat& num2);
 	static UFloat mult(UFloat& num1, UFloat& num2);
+	static UFloat floatMult(UFloat& uNum, float fNum);
 
 	static UFloat floatToUFloat(float num);
 	static UFloat intToUFloat(int num);
-	static UFloat stringToUFloat(std::string& num);
+	static UFloat stringToUFloat(std::string num);
 
 	static float uFloatToFloat(UFloat num);
 	static int uFloatToInt(UFloat num);
@@ -40,4 +42,5 @@ public:
 	void mult(UFloat& num);
 
 	void flipPositive();
+	void clear();
 };

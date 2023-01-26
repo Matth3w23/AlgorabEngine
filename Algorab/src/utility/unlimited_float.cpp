@@ -78,6 +78,8 @@ UFloat UFloat::posPosSum(UFloat& pNum1, UFloat& pNum2) {
         if (sum >= 10) {
             carry = 1;
             sum -= 10;
+        } else {
+            carry = 0;
         }
 
         //push result to integral part while preventing leading zeroes
@@ -174,8 +176,6 @@ UFloat UFloat::posNegSum(UFloat& pNum, UFloat& nNum) { //|pos| must be greater t
         } else {
             b = nNum.integral[i];
         }
-
-        sum = a + b + carry;
 
         sum = a - b - carry;
         if (sum < 0) {
@@ -337,8 +337,201 @@ UFloat UFloat::sum(UFloat& num1, UFloat& num2) {
 }
 
 UFloat UFloat::mult(UFloat& num1, UFloat& num2) {
+    /*
+    * 123.456 * 135.246
+    * 
+    * [321], [654]
+    * [531], [642]
+    * 
+    */
+
+    UFloat total = UFloat();
+
+    int a, b, carry = 0;
+    int mul = 0;
+    int remainingZeroes;
+
+    int zeroesToPush = 0;
+    bool pushedNonZero = false;
+
     UFloat temp = UFloat();
-    return temp;
+
+    for (int i = 0; i < num2.decimal.size(); i++) {
+        temp.clear();
+
+        b = num2.decimal[i];
+
+        
+        pushedNonZero = false;
+
+        for (int j = 0; j < num1.decimal.size(); j++) {
+            a = num1.decimal[j];
+
+            mul = a * b + carry;
+
+            div_t res = div(mul, 10);
+            carry = res.quot;
+
+            if (!pushedNonZero) {
+                if (res.rem != 0) {
+                    temp.decimal.push_back(res.rem);
+                    pushedNonZero = true;
+                }
+            } else {
+                temp.decimal.push_back(res.rem);
+            }
+            
+        }
+
+        remainingZeroes = (num2.decimal.size() - i);
+        zeroesToPush = 0;
+
+        for (int j = 0; j < num1.integral.size(); j++) {
+            a = num1.integral[j];
+
+            mul = a * b + carry;
+
+            div_t res = div(mul, 10);
+            carry = res.quot;
+
+            if (remainingZeroes > 0) {
+                temp.decimal.push_back(res.rem);
+                remainingZeroes--;
+            } else {
+                if (res.rem != 0) {
+                    while (zeroesToPush > 0) {
+                        temp.integral.push_back(0);
+                        zeroesToPush--;
+                    }
+                    temp.integral.push_back(res.rem);
+                } else {
+                    zeroesToPush++;
+                }
+                
+            }
+        }
+        
+        if (carry) {
+            if (remainingZeroes > 0) {
+                temp.decimal.push_back(carry);
+                remainingZeroes--;
+            } else {
+                while (zeroesToPush > 0) {
+                    temp.integral.push_back(0);
+                    zeroesToPush--;
+                }
+                temp.integral.push_back(carry);
+            }
+        }
+
+        while (remainingZeroes > 0) {
+            temp.decimal.push_back(0);
+            remainingZeroes--;
+        }
+
+        total.add(temp);
+        carry = 0;
+
+    }
+
+    
+
+    for (int i = 0; i < num2.integral.size(); i++) {
+        temp.clear();
+
+        b = num2.integral[i];
+
+        int pushesToDecimal = num1.decimal.size() - i;
+
+        while (pushesToDecimal < 0) {
+            temp.integral.push_back(0);
+            pushesToDecimal++;
+        }
+
+        pushedNonZero = false;
+
+        for (int j = 0; j < num1.decimal.size(); j++) {
+            a = num1.decimal[j];
+
+            mul = a * b + carry;
+
+            div_t res = div(mul, 10);
+            carry = res.quot;
+
+            if (pushesToDecimal > 0) {
+                if (!pushedNonZero) {
+                    if (res.rem != 0) {
+                        temp.decimal.push_back(res.rem);
+                        pushedNonZero = true;
+                    }
+                } else {
+                    temp.decimal.push_back(res.rem);
+                }
+
+                pushesToDecimal--;
+
+
+            } else {
+                temp.integral.push_back(res.rem);
+            }
+        }
+
+        zeroesToPush = 0;
+
+        for (int j = 0; j < num1.integral.size(); j++) {
+            a = num1.integral[j];
+
+            mul = a * b + carry;
+
+            div_t res = div(mul, 10);
+            carry = res.quot;
+
+            if (res.rem != 0) {
+                while (zeroesToPush > 0) {
+                    temp.integral.push_back(0);
+                    zeroesToPush--;
+                }
+                temp.integral.push_back(res.rem);
+            } else {
+                zeroesToPush++;
+            }
+        }
+        
+
+        if (carry != 0) {
+            while (zeroesToPush > 0) {
+                temp.integral.push_back(0);
+                zeroesToPush--;
+            }
+            temp.integral.push_back(carry);
+        }
+
+        total.add(temp);
+    }
+    
+
+    total.positive = (num1.positive == num2.positive);
+    return total;
+}
+
+UFloat UFloat::floatMult(UFloat& uNum, float fNum) {
+    UFloat total = UFloat();
+    if (fNum == 0) {
+        return total;
+    }
+
+    if (uNum.positive != (fNum > 0)) {
+        total.positive = false;
+    }
+
+    //integral part
+    for (int i = 0; i < uNum.integral.size(); i++) {
+        UFloat temp = UFloat();
+
+        int a = uNum.integral[i];
+        float mul = a * fNum; //e.g. "234354.2345", want to times by 10^i
+
+    }
 }
 
 UFloat UFloat::floatToUFloat(float num) {
@@ -347,12 +540,14 @@ UFloat UFloat::floatToUFloat(float num) {
 }
 
 UFloat UFloat::intToUFloat(int num) {
-    UFloat temp = UFloat();
+    UFloat temp = UFloat(num);
     return temp;
 }
 
-UFloat UFloat::stringToUFloat(std::string& num) {
-    UFloat temp = UFloat();
+UFloat UFloat::stringToUFloat(std::string num) {
+    UFloat temp = UFloat(num);
+    return temp;
+    /*
     std::string in, de;
     std::string validNums = "0123456789";
 
@@ -390,7 +585,7 @@ UFloat UFloat::stringToUFloat(std::string& num) {
         }
     }
 
-    return temp;
+    return temp;*/
 }
 
 float UFloat::uFloatToFloat(UFloat num) {
@@ -427,15 +622,17 @@ std::string UFloat::uFloatToString(UFloat num) {
 UFloat::UFloat() {
 }
 
-UFloat::UFloat(int num) {
+UFloat::UFloat(int num) :
+    UFloat(std::to_string(num)) {
+    ;
 }
 
-UFloat::UFloat(float num) {
+UFloat::UFloat(float num) :
+    UFloat(std::to_string(num)) {
+    ;
 }
 
 UFloat::UFloat(std::string num) {
-    //could probably use stringToUFloat but that would create two objects?
-    //don't know if there's a way of cloning self to an object
 
     std::string in, de;
     std::string validNums = "0123456789";
@@ -479,6 +676,11 @@ UFloat::UFloat(const char* num) :
 }
 
 void UFloat::add(UFloat& num) {
+    UFloat temp = sum(*this, num);
+    positive = temp.positive;
+    integral = temp.integral;
+    decimal = temp.decimal;
+    //*this = temp?
 }
 
 void UFloat::sub(UFloat& num) {
@@ -489,4 +691,10 @@ void UFloat::mult(UFloat& num) {
 
 void UFloat::flipPositive() {
     positive = !positive;
+}
+
+void UFloat::clear() {
+    positive = true;
+    integral.clear();
+    decimal.clear();
 }
