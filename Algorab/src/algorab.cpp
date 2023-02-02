@@ -126,7 +126,7 @@ int main() {
     std::vector<ModelEntity*> bpEnts;
     //ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
     ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 10.0f), 1.0f);
-    ModelEntity backpackEntityA(&spaceShuttleModel, glm::vec3(5.0f, 0.0f, 3), 0.3f);
+    /*ModelEntity backpackEntityA(&spaceShuttleModel, glm::vec3(5.0f, 0.0f, 3), 0.3f);
     ModelEntity backpackEntity1(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity2(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity3(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
@@ -136,9 +136,9 @@ int main() {
     ModelEntity backpackEntity7(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity8(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity10(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    ModelEntity backpackEntity10(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);*/
     bpEnts.push_back(&backpackEntity);
-    bpEnts.push_back(&backpackEntityA);
+    /*bpEnts.push_back(&backpackEntityA);
     bpEnts.push_back(&backpackEntity1);
     bpEnts.push_back(&backpackEntity2);
     bpEnts.push_back(&backpackEntity3);
@@ -148,7 +148,7 @@ int main() {
     bpEnts.push_back(&backpackEntity7);
     bpEnts.push_back(&backpackEntity8);
     bpEnts.push_back(&backpackEntity9);
-    bpEnts.push_back(&backpackEntity10);
+    bpEnts.push_back(&backpackEntity10);*/
 
     /*for (int i = 0; i < 100; i++) {
         ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
@@ -170,8 +170,8 @@ int main() {
     //variables for testing
     const float radius = 10.0f;
     unsigned int counter = 0;
-    unsigned int zPos = 0;
-    const float moveStep = 10000.0f;
+    UFloat zPos = UFloat("0");
+    const float moveStep = 100000000000000.0f;
 
 
 
@@ -185,13 +185,19 @@ int main() {
 
     std::cout << "Starting" << std::endl;
 
+    UFloat adjustedPos = UFloat();
+    UFloat minusFive = UFloat("- 5.0");
+    UFloat one = UFloat("1"); //TODO: Add float addition and subtraction to UFLOAT, and maybe increment
+
     while (!glfwWindowShouldClose(window)) { //main loop
 
         //mainCam.setPosition(glm::vec3(sin(glfwGetTime()) * radius, 0.0f, cos(glfwGetTime()) * radius));
         //mainCam.lookAt(glm::vec3(0.0f, 0.0f, 0.0f)); //TODO: Add variants of setPosition and lookAt that don't use vec3
 
-        backpackEntity.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep));
-        mainCam.setPosition(glm::vec3(0.0f, 0.0f, zPos * moveStep - 5.0f));
+        adjustedPos = UFloat::floatMult(zPos, moveStep);
+
+        backpackEntity.setPosition(UFVec3(0.0f, 0.0f, adjustedPos));
+        mainCam.setPosition(UFVec3(0.0f, 0.0f, UFloat::sum(adjustedPos, minusFive)));
         //backpackEntity.setScale(zPos * moveStep / 10);
 
 
@@ -217,12 +223,12 @@ int main() {
         lastTime = currentTime;
 
         counter++;
-        zPos++;
+        zPos.add(one);
 
         average = (average * (counter - 1) + fps) / counter;
         if (counter >= 20) {
             ss.str(std::string());
-            ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (zPos * moveStep);
+            ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (adjustedPos.toString());
             ss << "[" << mainCam.getPosition().x.toString() << ", " << mainCam.getPosition().y.toString() << ", " << mainCam.getPosition().z.toString() << "]";
             glfwSetWindowTitle(window, ss.str().c_str());
             //std::cout << fps << std::endl;

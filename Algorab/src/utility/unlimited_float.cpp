@@ -515,11 +515,12 @@ UFloat UFloat::mult(UFloat& num1, UFloat& num2) {
 }
 
 UFloat UFloat::floatMult(UFloat& uNum, float fNum) {
-    UFloat total = UFloat();
-    if (fNum == 0) {
-        return total;
-    }
+    UFloat temp = UFloat(fNum);
 
+
+    return mult(uNum, temp);
+
+    /*
     if (uNum.positive != (fNum > 0)) {
         total.positive = false;
     }
@@ -532,6 +533,8 @@ UFloat UFloat::floatMult(UFloat& uNum, float fNum) {
         float mul = a * fNum; //e.g. "234354.2345", want to times by 10^i
 
     }
+
+    return total;*/
 }
 
 UFloat UFloat::floatToUFloat(float num) {
