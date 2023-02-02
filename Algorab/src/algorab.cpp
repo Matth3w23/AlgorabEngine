@@ -2,8 +2,8 @@
 
 double deltaTime;
 
-//float moveSpeed = 9999999999999999;
-float moveSpeed = 99;
+float moveSpeed = 9999999999999999;
+//float moveSpeed = 99;
 Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false); //TODO: Change camera from being a global variable/change input functions
 
 //mouse input
@@ -25,19 +25,19 @@ void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 
 int main() {
     std::string testFloat = "-1111";
-    UFloat t1("1369");
-    UFloat t2("2460");
+    UFloat t1("99.651111");
+    UFloat t2("0.896069");
     UFloat t3("1111.56723");
     UFloat t4("3754893675893465897654897685497689547698547868934876.3728756436893432684872635465");
     UFloat t5("-84359086785367398657438965348.2184764656");
     UFloat t6("-1732648235487.172881623457");
     UFloat t7("-1482864826.2147823756847");
-    std::cout << UFloat::uFloatToString(t6) << std::endl;
-    std::cout << UFloat::uFloatToString(t7) << std::endl;
-    std::cout << UFloat::uFloatToString(UFloat::mult(t6, t7)) << std::endl;
+    std::cout << UFloat::uFloatToString(t1) << std::endl;
+    std::cout << UFloat::uFloatToString(t2) << std::endl;
+    std::cout << UFloat::uFloatToString(UFloat::sum(t1, t2)) << std::endl;
     //std::cout << UFloat::uFloatToString(UFloat::sum(t2, t1)) << std::endl;
 
-    std::exit(0);
+    //std::exit(0);
 
 
 
@@ -108,7 +108,7 @@ int main() {
     //Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false);
     mainCam.setProjectionFrustum(70, 800.0f / 600.0f, 100, 100000, true);
     mainCam.updateProjectionMatrix();
-    mainCam.updateViewMatrix();
+    //mainCam.updateViewMatrix();
     RenderTarget mainRenderTarget;
     Renderer mainRenderer(&mainCam, mainRenderTarget);
 
@@ -160,11 +160,11 @@ int main() {
         bpEnts.push_back(test);
     }*/
 
-    /*for (ModelEntity* bp : bpEnts) {
+    for (ModelEntity* bp : bpEnts) {
         float d = 10.0f;
         //if (bp->getModel()->getMeshes().size() == spaceShuttleModel.getMeshes().size()) { d = 100.0; } //very scrappy, just for testing. Have way to check if same model?
-        bp->setScale(glm::length(bp->getPosition()) * (1.0f / d));
-    }*/
+        bp->setScale(glm::length(uFVecToVec(bp->getPosition())) * (1.0f / d));
+    }
 
 
     //variables for testing
@@ -223,7 +223,7 @@ int main() {
         if (counter >= 20) {
             ss.str(std::string());
             ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (zPos * moveStep);
-            ss << "[" << mainCam.getPosition().x << ", " << mainCam.getPosition().y << ", " << mainCam.getPosition().z << "]";
+            ss << "[" << mainCam.getPosition().x.toString() << ", " << mainCam.getPosition().y.toString() << ", " << mainCam.getPosition().z.toString() << "]";
             glfwSetWindowTitle(window, ss.str().c_str());
             //std::cout << fps << std::endl;
             counter = 0;

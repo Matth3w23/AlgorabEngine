@@ -5,6 +5,7 @@
 #include "../utility/shader.h"
 #include "../entity/entity.h"
 #include "render_target.h"
+#include "../utility/uFVec.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

@@ -1,16 +1,22 @@
 #include "entity.h"
 
 Entity::Entity(glm::vec3 pos) :
-	position(pos) {
+	position(UFVec3(pos)) {
 	;
 }
-
-glm::vec3& Entity::getPosition() {
+Entity::Entity(UFVec3 pos) :
+	position(pos) {
+}
+UFVec3& Entity::getPosition() {
 	return position;
 }
 
-void Entity::setPosition(glm::vec3 pos) {
+void Entity::setPosition(UFVec3 pos) {
 	position = pos;
+}
+
+void Entity::setPosition(glm::vec3 pos) {
+	position = UFVec3(pos);
 }
 
 
@@ -19,6 +25,10 @@ void Entity::setPosition(glm::vec3 pos) {
 ModelEntity::ModelEntity(Model* mod, glm::vec3 pos, float scl) :
 	model(mod), scale(scl), Entity::Entity(pos){
 	;
+}
+
+ModelEntity::ModelEntity(Model* mod, UFVec3 pos, float scl) :
+	model(mod), scale(scl), Entity::Entity(pos) {
 }
 
 Model* ModelEntity::getModel() {

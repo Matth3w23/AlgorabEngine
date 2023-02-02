@@ -17,7 +17,7 @@ void Renderer::renderAllPushed() {
     unsigned int smallestBucket;
     unsigned int largestBucket;
     for (ModelEntity* modEnt : modelEntsToRender) {
-        dist = (viewMat * glm::vec4(modEnt->getPosition() - currentCamera->getPosition(), 1.0f)).z; //TODO probably very inefficient, needs looking at
+        dist = (viewMat * glm::vec4(uFVecToVec(uFVecSub(modEnt->getPosition(),currentCamera->getPosition())), 1.0f)).z; //TODO probably very inefficient, needs looking at
         furVertDist = modEnt->getFurVertDist() * modEnt->getScale();
         min = dist - furVertDist;
         max = dist + furVertDist;
@@ -156,7 +156,7 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
     std::string number;
 
     modelMat = glm::mat4(1.0f);
-    posDiff = modelEnt->getPosition() - currentCamera->getPosition();
+    posDiff = uFVecToVec(uFVecSub(modelEnt->getPosition(), currentCamera->getPosition()));
     //std::cout << "[" << posDiff.x << "," << posDiff.y << "," << posDiff.z << "]" << std::endl;
     modelMat = glm::translate(modelMat, (posDiff) * currentBucketScale); //camera relative world position
     modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));

@@ -12,6 +12,7 @@
 #include "renderer/render_target.h"
 #include "entity/entity.h"
 #include "utility/unlimited_float.h"
+#include "utility//uFVec.h"
 
 #include <iostream>
 #include <random>

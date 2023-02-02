@@ -89,8 +89,8 @@ UFloat UFloat::posPosSum(UFloat& pNum1, UFloat& pNum2) {
             if (zeroesToPush) { //i.e. != 0
                 for (int j = 0; j < zeroesToPush; j++) {
                     temp.integral.push_back(0);
-                    zeroesToPush = 0;
                 }
+                zeroesToPush = 0;
             }
             temp.integral.push_back(sum);
         }
@@ -101,8 +101,8 @@ UFloat UFloat::posPosSum(UFloat& pNum1, UFloat& pNum2) {
         if (zeroesToPush) { //i.e. != 0
             for (int j = 0; j < zeroesToPush; j++) {
                 temp.integral.push_back(0);
-                zeroesToPush = 0;
             }
+            zeroesToPush = 0;
         }
         temp.integral.push_back(1);
     }
@@ -192,9 +192,9 @@ UFloat UFloat::posNegSum(UFloat& pNum, UFloat& nNum) { //|pos| must be greater t
         } else {
             if (zeroesToPush) { //i.e. != 0
                 for (int j = 0; j < zeroesToPush; j++) {
-                    temp.integral.push_back(0);
-                    zeroesToPush = 0;
+                    temp.integral.push_back(0);  
                 }
+                zeroesToPush = 0;
             }
             temp.integral.push_back(sum);
         }
@@ -204,8 +204,8 @@ UFloat UFloat::posNegSum(UFloat& pNum, UFloat& nNum) { //|pos| must be greater t
         if (zeroesToPush) { //i.e. != 0
             for (int j = 0; j < zeroesToPush; j++) {
                 temp.integral.push_back(0);
-                zeroesToPush = 0;
             }
+            zeroesToPush = 0;
         }
         temp.integral.push_back(1);
     }
@@ -535,7 +535,7 @@ UFloat UFloat::floatMult(UFloat& uNum, float fNum) {
 }
 
 UFloat UFloat::floatToUFloat(float num) {
-    UFloat temp = UFloat();
+    UFloat temp = UFloat(num);
     return temp;
 }
 
@@ -589,11 +589,11 @@ UFloat UFloat::stringToUFloat(std::string num) {
 }
 
 float UFloat::uFloatToFloat(UFloat num) {
-    return 0.0f;
+    return std::stof(uFloatToString(num));
 }
 
 int UFloat::uFloatToInt(UFloat num) {
-    return 0;
+    return std::stoi(uFloatToString(num));
 }
 
 std::string UFloat::uFloatToString(UFloat num) {
@@ -676,17 +676,28 @@ UFloat::UFloat(const char* num) :
 }
 
 void UFloat::add(UFloat& num) {
-    UFloat temp = sum(*this, num);
+    /*UFloat temp = sum(*this, num);
     positive = temp.positive;
     integral = temp.integral;
-    decimal = temp.decimal;
+    decimal = temp.decimal;*/
     //*this = temp?
+    *this = sum(*this, num);
 }
 
 void UFloat::sub(UFloat& num) {
+    UFloat temp = num;
+    temp.flipPositive();
+
+    *this = sum(*this, temp);
+    
 }
 
 void UFloat::mult(UFloat& num) {
+    *this = mult(*this, num);
+}
+
+std::string UFloat::toString() {
+    return uFloatToString(*this);
 }
 
 void UFloat::flipPositive() {

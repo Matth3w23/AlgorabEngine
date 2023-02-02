@@ -5,7 +5,7 @@ Camera::~Camera() {
 
 Camera::Camera(glm::vec3 pos, glm::vec3 directionIndicator, bool lookAt) : position(pos) {
 	if (lookAt) {
-		forward = glm::normalize(directionIndicator - position);
+		forward = glm::normalize(uFVecToVec(uFVecSub(UFVec3(directionIndicator),position)));
 	} else {
 		forward = glm::normalize(directionIndicator);
 	}
@@ -15,14 +15,14 @@ Camera::Camera(glm::vec3 pos, glm::vec3 directionIndicator, bool lookAt) : posit
 
 	setProjectionFrustum(60, 800.0f / 600.0f, 0.1, 100, true); //TODO: Add this to constructor
 
-	updateViewMatrix();
+	//updateViewMatrix();
 	updateRelativeViewMatrix();
 	updateProjectionMatrix();
 }
 
-void Camera::updateViewMatrix() {
+/*void Camera::updateViewMatrix() {
 	viewMatrix = glm::lookAtLH(position, position + forward, up);
-}
+}*/
 
 void Camera::updateRelativeViewMatrix() {
 	relativeViewMatrix = glm::lookAtLH(glm::vec3(0.0f), forward, up);
@@ -33,7 +33,7 @@ void Camera::updateProjectionMatrix() {
 }
 
 void Camera::lookAt(glm::vec3 lookPos) {
-	forward = glm::normalize(lookPos - position);
+	forward = glm::normalize(uFVecToVec(uFVecSub(UFVec3(lookPos), position)));
 	updateAnglesFromVectors();
 }
 
@@ -53,7 +53,7 @@ float Camera::getFarPlane() {
 	return farPlane;
 }
 
-glm::vec3& Camera::getPosition() {
+UFVec3& Camera::getPosition() {
 	return position;
 }
 
@@ -99,15 +99,34 @@ void Camera::setFarPlane(float far) {
 }
 
 void Camera::setPosition(glm::vec3 pos) {
-	position = pos;
+	position = UFVec3(pos);
 }
 
 void Camera::move(glm::vec3 moveVec) {
-	position += moveVec;
+	position.add(UFVec3(moveVec));
 }
 
 void Camera::moveRelative(glm::vec3 moveVec) {
-	position += moveVec.x * right + moveVec.y * up + moveVec.z * forward;
+	std::cout << "----------AAASAAAAAAAAAAAAA------" << std::endl;
+	std::cout << moveVec.x << "," << moveVec.y << "," << moveVec.z << std::endl;
+	std::cout << position.x.toString() << "," << position.y.toString() << "," << position.z.toString() << std::endl;
+	position.add(UFVec3(moveVec.x * right + moveVec.y * up + moveVec.z * forward));
+	std::cout << position.x.toString() << "," << position.y.toString() << "," << position.z.toString() << std::endl;
+	std::cout << "----------BBBBBBBBBBBBBBBBBBBB------" << std::endl;
+}
+
+void Camera::setPosition(UFVec3 pos) {
+	position = pos;
+}
+
+void Camera::move(UFVec3 moveVec) {
+	position.add(UFVec3(moveVec));
+}
+
+void Camera::moveRelative(UFVec3 moveVec) {
+	position.add(UFVec3(UFloat::uFloatToFloat(moveVec.x) * right
+		+ UFloat::uFloatToFloat(moveVec.y) * up
+		+ UFloat::uFloatToFloat(moveVec.z) * forward));
 }
 
 void Camera::turn(float yw, float ptch, bool constrain) {

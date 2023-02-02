@@ -1,16 +1,23 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "../model/model.h"
+#include "../utility/uFVec.h"
 
 class Entity {
 private:
-	glm::vec3 position;
+	UFVec3 defaultAnchor = UFVec3(0.0f, 0.0f, 0.0f);
+
+	UFVec3 position;
+	glm::vec3 relPosition;
+	UFVec3* anchorPosition = &defaultAnchor; //TODO: Have default anchor in anchor class
+	
 public:
-	Entity(glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f));
+	Entity(glm::vec3 pos);
+	Entity(UFVec3 pos = UFVec3());
 
-	glm::vec3& getPosition();
+	UFVec3& getPosition();
+	void setPosition(UFVec3 pos);
 	void setPosition(glm::vec3 pos);
-
 };
 
 class ModelEntity : public Entity {
@@ -18,7 +25,8 @@ private:
 	Model* model;
 	float scale;
 public:
-	ModelEntity(Model* mod, glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), float scl = 1.0f);
+	ModelEntity(Model* mod, glm::vec3 pos, float scl = 1.0f);
+	ModelEntity(Model* mod, UFVec3 pos = UFVec3(), float scl = 1.0f);
 
 	Model* getModel();
 	float getScale();

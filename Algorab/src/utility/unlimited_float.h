@@ -41,6 +41,8 @@ public:
 	void sub(UFloat& num);
 	void mult(UFloat& num);
 
+	std::string toString();
+
 	void flipPositive();
 	void clear();
 };
