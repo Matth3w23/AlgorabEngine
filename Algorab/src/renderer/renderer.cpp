@@ -1,5 +1,14 @@
 #include "renderer.h"
 
+//float pointAngle = M_PI*(0.1f/180.0f);
+//float disappearAngle = M_PI * (0.01f / 180.0f); //TODO: Implement these differently
+float pointPix = 2;
+float disPix = 1;
+float pointAngle = atan((pointPix * 2 * tan(M_PI * (0.5 * 60 / 180)))/800);
+float disappearAngle = atan((disPix * 2 * tan(M_PI * (0.5 * 60 / 180))) / 800);
+
+//WINDOW IS CURRENTLY HARD SET AT 800*600, IN FUTURE USE TARGET STUFF
+
 void Renderer::renderAllPushed() {
     drawCalls = 0;
     clearAllBuckets();
@@ -60,12 +69,16 @@ void Renderer::renderAllPushed() {
     currentCamera->setFarPlane(1.1f * bucketScale);
     currentCamera->updateProjectionMatrix();
 
+    pointShader.use();
+    pointShader.setMat4("view", viewMat);
+    pointShader.setMat4("projection", projMat); //uniforms are persistent
+
     texturedModelShader.use();
     texturedModelShader.setMat4("view", viewMat);
-    texturedModelShader.setMat4("projection", projMat);
+    texturedModelShader.setMat4("projection", projMat); //uniforms are persistent
 
     for (auto it = buckets.rbegin(); it != buckets.rend(); it++) {
-        renderBucket(it->first, it->second);
+        renderBucket(it->first, it->second); //error here
     }
 
     //glBindFramebuffer(GL_FRAMEBUFFER, target.getFrameBuffer());
@@ -90,7 +103,7 @@ void Renderer::renderAllPushed() {
         for (ModelEntity* modEnt : modelEntsToRender) {
             renderModelEntity(modEnt);
         }
-    }*/
+    }*/ 
     modelEntsToRender = {};
 
     /*for (PointEntity pEnt : pointsToRender) {
@@ -98,24 +111,26 @@ void Renderer::renderAllPushed() {
     }*/
     pointsToRender = {};
 
-    /*float vertices[] = {
-            -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            0.0f,  0.5f, 0.0f
-    };
+    //float vertices[] = {
+    //        0.5f, -0.5f, 0.0f,
+    //        -0.5f, -0.5f, 0.0f,
+    //        0.0f,  0.5f, 0.0f
+    //};
 
-    unsigned int VAO;
-    unsigned int VBO;
-    glGenBuffers(1, &VBO);
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    Shader testShader("assets/shaders/testShader.vs", "assets/shaders/testShader.fs");
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    testShader.use();
-    glDrawArrays(GL_TRIANGLES, 0, 3);*/
+    //glClear(GL_DEPTH_BUFFER_BIT);
+    ////glClear(GL_COLOR_BUFFER_BIT);
+    //unsigned int VAO2;
+    //unsigned int VBO2;
+    //glGenBuffers(1, &VBO2);
+    //glGenVertexArrays(1, &VAO2);
+    //glBindVertexArray(VAO2);
+    //glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    //Shader testShader("assets/shaders/testShader.vs", "assets/shaders/testShader.fs");
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    //glEnableVertexAttribArray(0);
+    //testShader.use();
+    //glDrawArrays(GL_TRIANGLES, 0, 3);
 
     //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //glClear(GL_COLOR_BUFFER_BIT);
@@ -141,9 +156,41 @@ void Renderer::renderBucket(unsigned int bucketNum, std::vector<ModelEntity*>& m
     glClear(GL_DEPTH_BUFFER_BIT);
     float currentBucketScale = 1 / (minimumCutOff * (std::pow(bucketScale, bucketNum)));
 
+    pointData.clear();
+
     for (ModelEntity* modEnt : modEnts) {
         renderModelEntity(modEnt, currentBucketScale);
     }
+    //std::cout << "TEST";
+
+    if (pointData.empty() == false) {
+        float test[] = { 0.0f, 0.0f, 0.0f};
+        float vertices[] = {
+            0.5f, -0.5f, 0.0f,
+            -0.5f, -0.5f, 0.0f,
+            0.0f,  0.5f, 0.0f
+        };
+        //Shader testShader("assets/shaders/testShader.vs", "assets/shaders/testShader.fs");
+        //testShader.use();
+        pointShader.use();
+        glBindVertexArray(pointVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, pointVBO);
+        //glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float)*pointData.size(), &pointData[0], GL_STATIC_DRAW);
+        //std::cout << "PAIN" << std::endl;
+        ////std::cout << sizeof(float) * pointData.size() << std::endl;
+        ////std::cout << sizeof(test) << std::endl;
+        //for (auto it = pointData.begin(); it != pointData.end(); it++) {
+        //    std::cout << *it << ", ";
+        //}
+        //std::cout << std::endl;
+        glDrawArrays(GL_POINTS, 0, 1);
+
+        texturedModelShader.use();
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+    //std::cout << "END" << std::endl;
+    
 }
 
 
@@ -158,63 +205,90 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
     modelMat = glm::mat4(1.0f);
     posDiff = uFVecToVec(uFVecSub(modelEnt->getPosition(), currentCamera->getPosition()));
     //std::cout << "[" << posDiff.x << "," << posDiff.y << "," << posDiff.z << "]" << std::endl;
-    modelMat = glm::translate(modelMat, (posDiff) * currentBucketScale); //camera relative world position
-    modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
-    texturedModelShader.setMat4("model", modelMat);
 
-    //TODO: Work out/store model matrices separately, send scale to vertex shader at start, send model matrix every time (is this more efficient?)
-    for (Mesh& modelMesh : modelEnt->getModel()->getMeshes()) {
-        std::vector<Texture>& textures = modelMesh.getTextures();
+    //work out whether to render as point or not render at all
+    float radius = modelEnt->getFurVertDist()*modelEnt->getScale();
+    float distance = glm::length(posDiff);
+    double angle = std::atan(radius / distance);
+    /*std::cout << angle << std::endl;
+    std::cout << (angle / M_PI) * 180 << std::endl;
+    std::cout << disappearAngle << "," << pointAngle << std::endl;
+    std::cout << "----" << std::endl;*/
 
-        for (unsigned int i = 0; i < textures.size(); i++) { //for every texture
-            //std::cout << "LOG: SETTING TEXTURE UNIFORM" << std::endl;
+    if (angle < disappearAngle) {
+        //just don't render
+    } else if (angle < pointAngle) {
+        posDiff *= currentBucketScale;
+        pointData.insert(pointData.end(), { posDiff.x, posDiff.y, posDiff.z });
+        float pointRadius = (800 * tan(angle)) / (2 * tan(M_PI * (0.5 * 60 / 180)));
+        pointData.push_back(pointRadius * 2);
+        //pointData.push_back(((180*angle/M_PI)/currentCamera->getFov())*800*2); //Isn't quite correct but good approximation
+        //pointData.insert(pointData.end(), { 0.2, 0.3, 0.6 }); //TODO: Colour
 
-            std::string& type = textures[i].type;
-            number = "1"; //only one diffuse map fopr now
 
-            if (type != "texture_diffuse") { //check the texture is a diffuse map
-                std::cout << "Error: Unsupported texture type: " << type << std::endl;
-            }
+        //render all points at once
+        //create array/vertex of points (position, size, colour)
+        //change shader program, pass all
+    } else {
 
-            unsigned int texID = textures[i].id;
+        modelMat = glm::translate(modelMat, (posDiff)*currentBucketScale); //camera relative world position
+        modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
+        texturedModelShader.setMat4("model", modelMat);
 
-            if (texID != currentlySetTextureID) {
-                //TODO: Set up texture cache
+        //TODO: Work out/store model matrices separately, send scale to vertex shader at start, send model matrix every time (is this more efficient?)
+        for (Mesh& modelMesh : modelEnt->getModel()->getMeshes()) {
+            std::vector<Texture>& textures = modelMesh.getTextures();
 
-                bool textureBound = false;
-                for (unsigned int j = 0; j < textureUnitCurrentIds.size(); j++) {
-                    if (textureUnitCurrentIds[j] == texID) {
-                        texturedModelShader.setUInt(type + number, j);
-                        
-                        textureBound = true;
-                    }
+            for (unsigned int i = 0; i < textures.size(); i++) { //for every texture
+                //std::cout << "LOG: SETTING TEXTURE UNIFORM" << std::endl;
+
+                std::string& type = textures[i].type;
+                number = "1"; //only one diffuse map fopr now
+
+                if (type != "texture_diffuse") { //check the texture is a diffuse map
+                    std::cout << "Error: Unsupported texture type: " << type << std::endl;
                 }
 
-                if (!textureBound) {
-                    lastTextureUnitBoundTo = (lastTextureUnitBoundTo + 1) % 16;
-                    glActiveTexture(GL_TEXTURE0 + lastTextureUnitBoundTo);
-                    glBindTexture(GL_TEXTURE_2D, texID);
+                unsigned int texID = textures[i].id;
 
-                    if (textureUnitCurrentIds.size() < lastTextureUnitBoundTo + 1) {
-                        textureUnitCurrentIds.push_back(texID);
-                    } else {
-                        textureUnitCurrentIds[lastTextureUnitBoundTo] = texID;
+                if (texID != currentlySetTextureID) {
+                    //TODO: Set up texture cache
+
+                    bool textureBound = false;
+                    for (unsigned int j = 0; j < textureUnitCurrentIds.size(); j++) {
+                        if (textureUnitCurrentIds[j] == texID) {
+                            texturedModelShader.setUInt(type + number, j);
+
+                            textureBound = true;
+                        }
                     }
-                    
+
+                    if (!textureBound) {
+                        lastTextureUnitBoundTo = (lastTextureUnitBoundTo + 1) % 16;
+                        glActiveTexture(GL_TEXTURE0 + lastTextureUnitBoundTo);
+                        glBindTexture(GL_TEXTURE_2D, texID);
+
+                        if (textureUnitCurrentIds.size() < lastTextureUnitBoundTo + 1) {
+                            textureUnitCurrentIds.push_back(texID);
+                        } else {
+                            textureUnitCurrentIds[lastTextureUnitBoundTo] = texID;
+                        }
+
+                    }
+
+
+                    currentlySetTextureID = texID;
+
+
                 }
 
+                glBindVertexArray(modelMesh.getVertexArray()); //TODO: Create a vertex array of all meshes
+                glDrawElements(GL_TRIANGLES, modelMesh.getIndices().size(), GL_UNSIGNED_INT, 0);
+                drawCalls++;
 
-                currentlySetTextureID = texID;
-                
-                
             }
 
-            glBindVertexArray(modelMesh.getVertexArray()); //TODO: Create a vertex array of all meshes
-            glDrawElements(GL_TRIANGLES, modelMesh.getIndices().size(), GL_UNSIGNED_INT, 0);
-            drawCalls++;
-            
         }
-
     }
         //std::cout << i << std::endl;
         
@@ -262,6 +336,23 @@ Renderer::Renderer(Camera* cam, RenderTarget& tar) :
     modelMat = glm::mat4(1.0f);
     viewMat = currentCamera->getRelativeViewMatrix();
     projMat = currentCamera->getProjectionMatrix();
+
+    //setup point vertex buffer
+    glGenVertexArrays(1, &pointVAO);
+    glGenBuffers(1, &pointVBO);
+
+    glBindVertexArray(pointVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, pointVBO);
+
+   
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0); //position
+    
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1); //size
+    
+    //glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)(4 * sizeof(float)));
+    //glEnableVertexAttribArray(2); //colour
 }
 
 

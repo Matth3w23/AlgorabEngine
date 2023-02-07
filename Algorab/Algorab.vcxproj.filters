@@ -106,5 +106,7 @@
     <None Include="assets\shaders\texturedModelRender.fs" />
     <None Include="assets\shaders\testShader.vs" />
     <None Include="assets\shaders\testShader.fs" />
+    <None Include="assets\shaders\pointShader.vs" />
+    <None Include="assets\shaders\pointShader.fs" />
   </ItemGroup>
 </Project>

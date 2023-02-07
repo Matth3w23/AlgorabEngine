@@ -107,12 +107,18 @@ void Camera::move(glm::vec3 moveVec) {
 }
 
 void Camera::moveRelative(glm::vec3 moveVec) {
+	#ifdef _DEBUG
 	std::cout << "----------AAASAAAAAAAAAAAAA------" << std::endl;
 	std::cout << moveVec.x << "," << moveVec.y << "," << moveVec.z << std::endl;
 	std::cout << position.x.toString() << "," << position.y.toString() << "," << position.z.toString() << std::endl;
+	#endif // DEBUG 
+	
 	position.add(UFVec3(moveVec.x * right + moveVec.y * up + moveVec.z * forward));
+#ifdef _DEBUG
 	std::cout << position.x.toString() << "," << position.y.toString() << "," << position.z.toString() << std::endl;
 	std::cout << "----------BBBBBBBBBBBBBBBBBBBB------" << std::endl;
+#endif // DEBUG 
+
 }
 
 void Camera::setPosition(UFVec3 pos) {

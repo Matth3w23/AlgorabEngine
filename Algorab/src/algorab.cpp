@@ -2,8 +2,8 @@
 
 double deltaTime;
 
-float moveSpeed = 9999999999999999;
-//float moveSpeed = 99;
+//float moveSpeed = 9999999999999999;
+float moveSpeed = 999;
 Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false); //TODO: Change camera from being a global variable/change input functions
 
 //mouse input
@@ -25,8 +25,8 @@ void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 
 int main() {
     std::string testFloat = "-1111";
-    UFloat t1("99.651111");
-    UFloat t2("0.896069");
+    UFloat t1("-0.981707");
+    UFloat t2("0.0670635");
     UFloat t3("1111.56723");
     UFloat t4("3754893675893465897654897685497689547698547868934876.3728756436893432684872635465");
     UFloat t5("-84359086785367398657438965348.2184764656");
@@ -34,7 +34,8 @@ int main() {
     UFloat t7("-1482864826.2147823756847");
     std::cout << UFloat::uFloatToString(t1) << std::endl;
     std::cout << UFloat::uFloatToString(t2) << std::endl;
-    std::cout << UFloat::uFloatToString(UFloat::sum(t1, t2)) << std::endl;
+    t2.add(t1);
+    std::cout << UFloat::uFloatToString(t2) << std::endl;
     //std::cout << UFloat::uFloatToString(UFloat::sum(t2, t1)) << std::endl;
 
     //std::exit(0);
@@ -48,7 +49,7 @@ int main() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(-9999999999999999, 9999999999999999);
-    //sstd::uniform_real_distribution<> dist(0, 99);
+    //std::uniform_real_distribution<> dist(0, 99);
 
     stbi_set_flip_vertically_on_load(true); //texture flip
 
@@ -95,6 +96,7 @@ int main() {
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW); //due to different coordinate systems
     glEnable(GL_MULTISAMPLE);
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
 #ifdef _DEBUG
     //enable debug output
@@ -150,21 +152,21 @@ int main() {
     bpEnts.push_back(&backpackEntity9);
     bpEnts.push_back(&backpackEntity10);*/
 
-    /*for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100; i++) {
         ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
         bpEnts.push_back(test);
-    }*/
-
-    /*for (int i = 0; i <= 10; i++) {
-        ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3((i/10.0f) * pow(10, i), 0.0f, 1*pow(10,i)), 1.0f);
-        bpEnts.push_back(test);
-    }*/
-
-    for (ModelEntity* bp : bpEnts) {
-        float d = 10.0f;
-        //if (bp->getModel()->getMeshes().size() == spaceShuttleModel.getMeshes().size()) { d = 100.0; } //very scrappy, just for testing. Have way to check if same model?
-        bp->setScale(glm::length(uFVecToVec(bp->getPosition())) * (1.0f / d));
     }
+
+    //for (int i = 0; i <= 10; i++) {
+    //    ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3((i/10.0f) * pow(10, i), 0.0f, 1*pow(10,i)), 1.0f);
+    //    bpEnts.push_back(test);
+    //}
+
+    //for (ModelEntity* bp : bpEnts) {
+    //    float d = 10.0f;
+    //    //if (bp->getModel()->getMeshes().size() == spaceShuttleModel.getMeshes().size()) { d = 100.0; } //very scrappy, just for testing. Have way to check if same model?
+    //    bp->setScale(glm::length(uFVecToVec(bp->getPosition())) * (1.0f / d));
+    //}
 
 
     //variables for testing
@@ -186,7 +188,7 @@ int main() {
     std::cout << "Starting" << std::endl;
 
     UFloat adjustedPos = UFloat();
-    UFloat minusFive = UFloat("- 5.0");
+    UFloat minusFive = UFloat("-5.0");
     UFloat one = UFloat("1"); //TODO: Add float addition and subtraction to UFLOAT, and maybe increment
 
     while (!glfwWindowShouldClose(window)) { //main loop
@@ -194,10 +196,10 @@ int main() {
         //mainCam.setPosition(glm::vec3(sin(glfwGetTime()) * radius, 0.0f, cos(glfwGetTime()) * radius));
         //mainCam.lookAt(glm::vec3(0.0f, 0.0f, 0.0f)); //TODO: Add variants of setPosition and lookAt that don't use vec3
 
-        adjustedPos = UFloat::floatMult(zPos, moveStep);
+        //adjustedPos = UFloat::floatMult(zPos, moveStep);
 
-        backpackEntity.setPosition(UFVec3(0.0f, 0.0f, adjustedPos));
-        mainCam.setPosition(UFVec3(0.0f, 0.0f, UFloat::sum(adjustedPos, minusFive)));
+        //backpackEntity.setPosition(UFVec3(0.0f, 0.0f, adjustedPos));
+        //mainCam.setPosition(UFVec3(0.0f, 0.0f, UFloat::sum(adjustedPos, minusFive)));
         //backpackEntity.setScale(zPos * moveStep / 10);
 
 

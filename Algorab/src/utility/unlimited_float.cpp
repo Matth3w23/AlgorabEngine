@@ -271,7 +271,7 @@ int UFloat::compareUFloats(UFloat num1, UFloat num2, bool absolute) { //return 1
     int indexModA = std::min(0, aSize - bSize);
     int indexModB = std::min(0, bSize - aSize);
 
-    for (int i = maxIts-1; i > 0; i--) {
+    for (int i = maxIts-1; i >= 0; i--) {
         aIndex = i + indexModA;
         bIndex = i + indexModB;
 
@@ -655,18 +655,38 @@ UFloat::UFloat(std::string num) {
         in = num.substr(minusMod, num.size()-minusMod);;
     }
 
+    //integral
+    int zeroesToPush = 0;
     for (int i = in.size() - 1; i >= 0; i--) {
         char digit = in[i];
         if (validNums.find(digit) != std::string::npos) {
-            integral.push_back((int)digit - '0');
+            int digint = (int)digit - '0';
+            if (digint == 0) {
+                zeroesToPush++;
+            } else {
+                while (zeroesToPush > 0) {
+                    integral.push_back(0);
+                    zeroesToPush--;
+                }
+                integral.push_back((int)digit - '0');
+            }
         } else {
             std::cerr << "UFloat Error: Encountered '" << digit << "' when converting '" << num << "' to UFloat" << std::endl;
         }
     }
+
+    //decimal
+    bool nonZeroPushed = false;
     for (int i = de.size() - 1; i >= 0; i--) {
         char digit = de[i];
         if (validNums.find(digit) != std::string::npos) {
-            decimal.push_back((int)digit - '0');
+            int digint = (int)digit - '0';
+
+            if (nonZeroPushed || digint != 0) {
+                decimal.push_back(digint);
+                nonZeroPushed = true;
+            }
+            
         } else {
             std::cerr << "UFloat Error: Encountered '" << digit << "' when converting '" << num << "' to UFloat" << std::endl;
         }

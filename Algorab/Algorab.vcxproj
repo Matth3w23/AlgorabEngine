@@ -176,6 +176,8 @@
     <ClCompile Include="src\stb_image\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\shaders\pointShader.fs" />
+    <None Include="assets\shaders\pointShader.vs" />
     <None Include="assets\shaders\testShader.fs" />
     <None Include="assets\shaders\testShader.vs" />
     <None Include="assets\shaders\texturedModelRender.fs" />

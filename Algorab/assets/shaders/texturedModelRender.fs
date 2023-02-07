@@ -4,7 +4,7 @@ out vec4 FragColour;
 in vec2 TexCoords;
 
 uniform sampler2D texture_diffuse1; //check if models have more than one diffuse texture
-//no material struct for now but will orobably use one in the future
+//no material struct for now but will probably use one in the future
 
 void main()
 {    

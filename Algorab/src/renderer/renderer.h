@@ -12,8 +12,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
 #include <vector>
-#include <cmath>
 #include <map>
+
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 #include <glm/gtx/string_cast.hpp>
@@ -26,6 +27,9 @@ private:
 	bool textureSetTest = false;
 	unsigned int currentlySetTextureID;
 	unsigned int lastTextureUnitBoundTo = 15; //max is 16/index 15
+
+	unsigned int pointVAO, pointVBO;
+	std::vector<float> pointData; //[[pos(3)][size(1)][colour(3)]]
 
 	unsigned int drawCalls = 0;
 	glm::vec3 posDiff;
@@ -44,6 +48,7 @@ private:
 	std::vector<PointEntity*> pointsToRender = {};
 	Shader screenShader = Shader("assets/shaders/screenShader.vs", "assets/shaders/screenShader.fs");;
 	Shader texturedModelShader = Shader("assets/shaders/texturedModelRender.vs", "assets/shaders/texturedModelRender.fs");
+	Shader pointShader = Shader("assets/shaders/pointShader.vs", "assets/shaders/pointShader.fs");
 	glm::mat4 modelMat;
 	glm::mat4 viewMat;
 	glm::mat4 projMat;
