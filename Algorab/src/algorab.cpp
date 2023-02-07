@@ -152,7 +152,7 @@ int main() {
     bpEnts.push_back(&backpackEntity9);
     bpEnts.push_back(&backpackEntity10);*/
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
         ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
         bpEnts.push_back(test);
     }

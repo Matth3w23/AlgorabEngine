@@ -2,10 +2,12 @@
 
 //float pointAngle = M_PI*(0.1f/180.0f);
 //float disappearAngle = M_PI * (0.01f / 180.0f); //TODO: Implement these differently
-float pointPix = 2;
+float pointPix = 50;
 float disPix = 1;
 float pointAngle = atan((pointPix * 2 * tan(M_PI * (0.5 * 60 / 180)))/800);
 float disappearAngle = atan((disPix * 2 * tan(M_PI * (0.5 * 60 / 180))) / 800);
+//float disappearAngle = -0.1;
+float pointMinRadius = 5;
 
 //WINDOW IS CURRENTLY HARD SET AT 800*600, IN FUTURE USE TARGET STUFF
 
@@ -184,7 +186,7 @@ void Renderer::renderBucket(unsigned int bucketNum, std::vector<ModelEntity*>& m
         //    std::cout << *it << ", ";
         //}
         //std::cout << std::endl;
-        glDrawArrays(GL_POINTS, 0, 1);
+        glDrawArrays(GL_POINTS, 0, pointData.size()/7);
 
         texturedModelShader.use();
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -210,20 +212,22 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
     float radius = modelEnt->getFurVertDist()*modelEnt->getScale();
     float distance = glm::length(posDiff);
     double angle = std::atan(radius / distance);
-    /*std::cout << angle << std::endl;
-    std::cout << (angle / M_PI) * 180 << std::endl;
-    std::cout << disappearAngle << "," << pointAngle << std::endl;
-    std::cout << "----" << std::endl;*/
+    //std::cout << angle << std::endl;
+    //std::cout << (angle / M_PI) * 180 << std::endl;
+    //std::cout << disappearAngle << "," << pointAngle << std::endl;
+    //std::cout << "----" << std::endl;
 
     if (angle < disappearAngle) {
         //just don't render
+        ;
     } else if (angle < pointAngle) {
         posDiff *= currentBucketScale;
         pointData.insert(pointData.end(), { posDiff.x, posDiff.y, posDiff.z });
         float pointRadius = (800 * tan(angle)) / (2 * tan(M_PI * (0.5 * 60 / 180)));
-        pointData.push_back(pointRadius * 2);
+        //std::cout << "POINTRADIUS: " << pointRadius << ", " << std::max(pointRadius * 2, pointMinRadius) << std::endl;
+        pointData.push_back(std::max(pointRadius * 2, pointMinRadius));
         //pointData.push_back(((180*angle/M_PI)/currentCamera->getFov())*800*2); //Isn't quite correct but good approximation
-        //pointData.insert(pointData.end(), { 0.2, 0.3, 0.6 }); //TODO: Colour
+        pointData.insert(pointData.end(), { 0.2, 0.3, 0.6 }); //TODO: Colour
 
 
         //render all points at once
@@ -345,14 +349,14 @@ Renderer::Renderer(Camera* cam, RenderTarget& tar) :
     glBindBuffer(GL_ARRAY_BUFFER, pointVBO);
 
    
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0); //position
     
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, (void*)(3*sizeof(float)));
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1); //size
     
-    //glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)(4 * sizeof(float)));
-    //glEnableVertexAttribArray(2); //colour
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(4 * sizeof(float)));
+    glEnableVertexAttribArray(2); //colour
 }
 
 
