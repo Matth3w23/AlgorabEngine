@@ -26,7 +26,7 @@ class Renderer {
 private:
 	bool textureSetTest = false;
 	unsigned int currentlySetTextureID;
-	unsigned int lastTextureUnitBoundTo = 15; //max is 16/index 15
+	unsigned int lastTextureUnitBoundTo = 14; //max is 15/index 14 (15 reserved for screen texture)
 
 	unsigned int pointVAO, pointVBO;
 	std::vector<float> pointData; //[[pos(3)][size(1)][colour(3)]]

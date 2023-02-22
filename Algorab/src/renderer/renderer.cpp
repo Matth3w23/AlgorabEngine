@@ -2,8 +2,8 @@
 
 //float pointAngle = M_PI*(0.1f/180.0f);
 //float disappearAngle = M_PI * (0.01f / 180.0f); //TODO: Implement these differently
-float pointPix = 50;
-float disPix = 1;
+float pointPix = 30;
+float disPix = 10;
 float pointAngle = atan((pointPix * 2 * tan(M_PI * (0.5 * 60 / 180)))/800);
 float disappearAngle = atan((disPix * 2 * tan(M_PI * (0.5 * 60 / 180))) / 800);
 //float disappearAngle = -0.1;
@@ -28,7 +28,9 @@ void Renderer::renderAllPushed() {
     unsigned int smallestBucket;
     unsigned int largestBucket;
     for (ModelEntity* modEnt : modelEntsToRender) {
-        dist = (viewMat * glm::vec4(uFVecToVec(uFVecSub(modEnt->getPosition(),currentCamera->getPosition())), 1.0f)).z; //TODO probably very inefficient, needs looking at
+        modEnt->posDif = uFVecToVec(uFVecSub(modEnt->getPosition(), currentCamera->getPosition()));
+        modEnt->relCamPos = viewMat * glm::vec4(modEnt->posDif, 1.0f);
+        dist = modEnt->relCamPos.z; //TODO probably very inefficient, needs looking at - store in modEnt for later
         furVertDist = modEnt->getFurVertDist() * modEnt->getScale();
         min = dist - furVertDist;
         max = dist + furVertDist;
@@ -62,7 +64,8 @@ void Renderer::renderAllPushed() {
 
     //from largest bucket to smallest
     //scale down and draw
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); //TODO: Change to render to target then render target to screen
+    glBindFramebuffer(GL_FRAMEBUFFER, target.getFrameBuffer()); //TODO: Change to render to target then render target to screen
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
@@ -80,10 +83,26 @@ void Renderer::renderAllPushed() {
     texturedModelShader.setMat4("projection", projMat); //uniforms are persistent
 
     for (auto it = buckets.rbegin(); it != buckets.rend(); it++) {
-        renderBucket(it->first, it->second); //error here
+        renderBucket(it->first, it->second);
     }
 
-    //glBindFramebuffer(GL_FRAMEBUFFER, target.getFrameBuffer());
+    //draw buffer texture to screen
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, target.getFrameBuffer());
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, 800, 600, 0, 0, 800, 600, GL_COLOR_BUFFER_BIT, GL_NEAREST); //blit to default frame buffer, resolving multisampling
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //glClearColor(0.1f, 0.5f, 0.1f, 1.0f);
+    //glClear(GL_COLOR_BUFFER_BIT);
+    //screenShader.use();
+    //screenShader.setInt("screenTexture", 15);
+    //glBindVertexArray(target.getScreenVAO());
+    //glDisable(GL_DEPTH_TEST);
+    //glActiveTexture(GL_TEXTURE0 + 15);
+    //glBindTexture(GL_TEXTURE_2D, target.getTextureBuffer());
+    //glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    //glEnable(GL_DEPTH_TEST);
 
     
     
@@ -120,7 +139,7 @@ void Renderer::renderAllPushed() {
     //};
 
     //glClear(GL_DEPTH_BUFFER_BIT);
-    ////glClear(GL_COLOR_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT);
     //unsigned int VAO2;
     //unsigned int VBO2;
     //glGenBuffers(1, &VBO2);
@@ -205,7 +224,7 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
     std::string number;
 
     modelMat = glm::mat4(1.0f);
-    posDiff = uFVecToVec(uFVecSub(modelEnt->getPosition(), currentCamera->getPosition()));
+    posDiff = modelEnt->posDif;
     //std::cout << "[" << posDiff.x << "," << posDiff.y << "," << posDiff.z << "]" << std::endl;
 
     //work out whether to render as point or not render at all
@@ -268,7 +287,7 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
                     }
 
                     if (!textureBound) {
-                        lastTextureUnitBoundTo = (lastTextureUnitBoundTo + 1) % 16;
+                        lastTextureUnitBoundTo = (lastTextureUnitBoundTo + 1) % 15; 
                         glActiveTexture(GL_TEXTURE0 + lastTextureUnitBoundTo);
                         glBindTexture(GL_TEXTURE_2D, texID);
 
@@ -329,6 +348,7 @@ void Renderer::setTarget(unsigned int tar) {
 
 void Renderer::PushEntity(ModelEntity& modEnt) {
     modelEntsToRender.push_back(&modEnt);
+    //need to update tree
 }
 
 void Renderer::PushEntity(PointEntity& pEnt) {

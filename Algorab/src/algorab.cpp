@@ -3,13 +3,16 @@
 double deltaTime;
 
 //float moveSpeed = 9999999999999999;
-float moveSpeed = 999;
+float moveSpeed = 9;
 Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false); //TODO: Change camera from being a global variable/change input functions
+
+unsigned int windowWidth = 800;
+unsigned int windowHeight = 600;
 
 //mouse input
 bool firstMouse = true;
-float mouseLastX = 800.0f / 2.0f;
-float mouseLastY = 600.0f / 2.0f;
+float mouseLastX = (float)windowWidth / 2.0f;
+float mouseLastY = (float)windowHeight / 2.0f;
 
 //performance variables
 bool performanceRunning = false;
@@ -48,8 +51,8 @@ int main() {
     //random distribution tools
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dist(-9999999999999999, 9999999999999999);
-    //std::uniform_real_distribution<> dist(0, 99);
+    //std::uniform_real_distribution<> dist(-9999999999999999, 9999999999999999);
+    std::uniform_real_distribution<> dist(0, 99);
 
     stbi_set_flip_vertically_on_load(true); //texture flip
 
@@ -63,11 +66,11 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    glfwWindowHint(GLFW_SAMPLES, 4); //TODO: Replace with offscreen anti-aliasing
+    //glfwWindowHint(GLFW_SAMPLES, 4); //TODO: Replace with offscreen anti-aliasing
 
 
     //window and context setup
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Window", NULL, NULL); //probably ought to abstract this out but fine for now
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Window", NULL, NULL); //probably ought to abstract this out but fine for now
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -95,7 +98,7 @@ int main() {
 
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW); //due to different coordinate systems
-    glEnable(GL_MULTISAMPLE);
+    //glEnable(GL_MULTISAMPLE);
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
 #ifdef _DEBUG
@@ -108,10 +111,10 @@ int main() {
 
     //Camera setup
     //Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false);
-    mainCam.setProjectionFrustum(70, 800.0f / 600.0f, 100, 100000, true);
+    mainCam.setProjectionFrustum(70, (float)windowWidth / (float)windowHeight, 1, 10, true);
     mainCam.updateProjectionMatrix();
     //mainCam.updateViewMatrix();
-    RenderTarget mainRenderTarget;
+    RenderTarget mainRenderTarget(windowWidth, windowHeight);
     Renderer mainRenderer(&mainCam, mainRenderTarget);
 
 
@@ -152,7 +155,7 @@ int main() {
     bpEnts.push_back(&backpackEntity9);
     bpEnts.push_back(&backpackEntity10);*/
 
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 100; i++) {
         ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
         bpEnts.push_back(test);
     }
