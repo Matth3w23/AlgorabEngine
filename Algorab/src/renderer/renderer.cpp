@@ -11,7 +11,13 @@ float pointMinRadius = 5;
 
 //WINDOW IS CURRENTLY HARD SET AT 800*600, IN FUTURE USE TARGET STUFF
 
-void Renderer::renderAllPushed() {
+void Renderer::renderAllMarked(EntityGrouper baseGroup) {
+
+    //iterate over tree, checking if children to render
+    //if find marked child, push to model ents to render
+    //should integrate buckets into this
+
+
     drawCalls = 0;
     clearAllBuckets();
     textureSetTest = false;

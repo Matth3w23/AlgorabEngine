@@ -336,6 +336,13 @@ UFloat UFloat::sum(UFloat& num1, UFloat& num2) {
     }
 }
 
+UFloat UFloat::sub(UFloat& num1, UFloat& num2) {
+    UFloat temp = num2;
+    temp.flipPositive();
+
+    return UFloat::sum(num1, temp);
+}
+
 UFloat UFloat::mult(UFloat& num1, UFloat& num2) {
     /*
     * 123.456 * 135.246

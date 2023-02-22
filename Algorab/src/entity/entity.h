@@ -3,8 +3,10 @@
 #include "../model/model.h"
 #include "../utility/uFVec.h"
 
+
+
 class Entity {
-private:
+protected:
 	UFVec3 defaultAnchor = UFVec3(0.0f, 0.0f, 0.0f);
 
 	UFVec3 position = UFVec3(0.0f, 0.0f, 0.0f);
@@ -15,7 +17,7 @@ private:
 	Entity* parent = nullptr; //assume default (position 0, scale 1, etc.)
 	
 public:
-	glm::vec3 posDif;
+	glm::vec3 posDif; //need to rename
 	glm::vec4 relCamPos;
 
 	Entity(glm::vec3 pos);
@@ -40,7 +42,6 @@ public:
 	ModelEntity(Model* mod, UFVec3 pos = UFVec3(), float scl = 1.0f);
 
 	Model* getModel();
-	float getScale();
 	float getFurVertDist();
 
 	void setModel(Model* mod);
@@ -65,12 +66,24 @@ public:
 
 class EntityGrouper : public Entity {
 private:
-	std::vector<Entity*> children;
-	UFloat furthestDistance; //maybe could just be a float, doesn't have to be too precise?
+	std::vector<EntityGrouper*> childGroups;
+	std::vector<ModelEntity*> childModels;
+	float furthestDistance; //just a float, doesn't have to be too precise?
+	bool childrenToBeRendered = false;
 	
 public:
-	void addChild(Entity* ent); //check if entity not already a child
-	void removeChild(Entity* ent);
+	void addChild(EntityGrouper* ent); //check if entity not already a child
+	void addChild(ModelEntity* ent);
+
+	void removeChild(EntityGrouper* ent);
+	void removeChild(ModelEntity* ent);
+
 	void clearChildren();
+
+	void updateFurthestDistance(UFVec3 childPos, float childFurDist);
+	float getFurthestDistance();
+
+	void setChildRendered(bool renderBool);
+	bool getChildrenToBeRendered();
 
 };

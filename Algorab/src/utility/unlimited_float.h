@@ -20,6 +20,7 @@ public:
 	std::vector<int> decimal;
 
 	static UFloat sum(UFloat& num1, UFloat& num2);
+	static UFloat sub(UFloat& num1, UFloat& num2);
 	static UFloat mult(UFloat& num1, UFloat& num2);
 	static UFloat floatMult(UFloat& uNum, float fNum);
 

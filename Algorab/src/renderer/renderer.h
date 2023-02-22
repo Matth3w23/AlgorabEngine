@@ -59,16 +59,13 @@ private:
 
 	void clearAllBuckets();
 public:
-	void renderAllPushed();
+	void renderAllMarked(EntityGrouper baseGroup);
 
 	Camera* getCurrentCamera();
 	RenderTarget& getTarget();
 
 	void setCurrentCamera(Camera* cam);
 	void setTarget(unsigned int tar);
-
-	void PushEntity(ModelEntity& modEnt);
-	void PushEntity(PointEntity& pEnt);
 
 	Renderer(Camera* cam, RenderTarget& tar);
 

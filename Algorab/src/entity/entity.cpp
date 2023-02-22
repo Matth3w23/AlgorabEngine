@@ -68,9 +68,9 @@ void ModelEntity::setModel(Model* mod) {
 	model = mod;
 }
 
-////////////////////////
-//POINT GROUPER (UNUSED)
-////////////////////////
+///////////////////////
+//POINT ENTITY (UNUSED)
+///////////////////////
 
 PointEntity::PointEntity(glm::vec4 col, float rad, bool conScale) :
 	colour(col), constantScale(conScale) {
@@ -98,26 +98,66 @@ void PointEntity::setConstantScale(bool conScl) {
 //ENTITY GROUPER
 ////////////////
 
-void EntityGrouper::addChild(Entity* ent) {
-	if (std::find(children.begin(), children.end(), children) != children.end()) {
-		children.push_back(ent);
+//need to update furthest distance
+void EntityGrouper::addChild(EntityGrouper* ent) {
+	if (std::find(childGroups.begin(), childGroups.end(), ent) != childGroups.end()) {
+		childGroups.push_back(ent);
+
+		glm::vec3 posDiff = uFVecToVec(uFVecSub(position, ent->getPosition()));
+		float length = glm::length(posDiff);
+		furthestDistance = std::max(length + ent->getFurthestDistance(), furthestDistance);
+	}
+
+	//note this doesn't check for cyclical children, which would cause issues
+}
+void EntityGrouper::addChild(ModelEntity* ent) {
+	if (std::find(childModels.begin(), childModels.end(), ent) != childModels.end()) {
+		childModels.push_back(ent);
 	}
 
 	//note this doesn't check for cyclical children, which would cause issues
 }
 
-void EntityGrouper::removeChild(Entity*) {
-	auto find = std::find(children.begin(), children.end(), children);
-	if (find != children.end()) {
-		children.erase(find);
+void EntityGrouper::removeChild(EntityGrouper* ent) {
+	auto find = std::find(childGroups.begin(), childGroups.end(), ent);
+	if (find != childGroups.end()) {
+		childGroups.erase(find);
+	}
+}
+void EntityGrouper::removeChild(ModelEntity* ent) {
+	auto find = std::find(childModels.begin(), childModels.end(), ent);
+	if (find != childModels.end()) {
+		childModels.erase(find);
 	}
 }
 
 void EntityGrouper::clearChildren() {
-	for (Entity* e: children) {
+	for (EntityGrouper* e: childGroups) {
+		e->setParent(nullptr);
+	}
+	for (ModelEntity* e : childModels) {
 		e->setParent(nullptr);
 	}
 
-	children.clear();
+	childGroups.clear();
+	childModels.clear();
 
+}
+
+void EntityGrouper::updateFurthestDistance(UFVec3 childPos, float childFurDist) {
+	glm::vec3 posDiff = uFVecToVec(uFVecSub(position, childPos));
+	float length = glm::length(posDiff);
+	furthestDistance = std::max(length + childFurDist, furthestDistance);
+}
+
+float EntityGrouper::getFurthestDistance() {
+	return furthestDistance;
+}
+
+void EntityGrouper::setChildRendered(bool renderBool) {
+	childrenToBeRendered = renderBool;
+}
+
+bool EntityGrouper::getChildrenToBeRendered() {
+	return childrenToBeRendered;
 }

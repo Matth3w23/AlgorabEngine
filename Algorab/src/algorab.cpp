@@ -118,6 +118,11 @@ int main() {
     Renderer mainRenderer(&mainCam, mainRenderTarget);
 
 
+    //SCENE GRAPH
+    EntityGrouper sceneGraphBase = EntityGrouper();
+
+
+
 
     //model importing
     Assimp::Importer modelImporter;
@@ -214,7 +219,7 @@ int main() {
         for (ModelEntity* bp : bpEnts) {
             mainRenderer.PushEntity(*bp);
         }
-        mainRenderer.renderAllPushed();
+        mainRenderer.renderAllPushed(sceneGraphBase);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
