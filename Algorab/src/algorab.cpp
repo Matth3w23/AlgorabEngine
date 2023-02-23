@@ -147,27 +147,27 @@ int main() {
     ModelEntity backpackEntity8(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity10(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);*/
-    bpEnts.push_back(&backpackEntity);
-    /*bpEnts.push_back(&backpackEntityA);
-    bpEnts.push_back(&backpackEntity1);
-    bpEnts.push_back(&backpackEntity2);
-    bpEnts.push_back(&backpackEntity3);
-    bpEnts.push_back(&backpackEntity4);
-    bpEnts.push_back(&backpackEntity5);
-    bpEnts.push_back(&backpackEntity6);
-    bpEnts.push_back(&backpackEntity7);
-    bpEnts.push_back(&backpackEntity8);
-    bpEnts.push_back(&backpackEntity9);
-    bpEnts.push_back(&backpackEntity10);*/
+    sceneGraphBase.addChild(&backpackEntity);
+    /*sceneGraphBase.addChild(&backpackEntityA);
+    sceneGraphBase.addChild(&backpackEntity1);
+    sceneGraphBase.addChild(&backpackEntity2);
+    sceneGraphBase.addChild(&backpackEntity3);
+    bsceneGraphBase.addChild(&backpackEntity4);
+    sceneGraphBase.addChild(&backpackEntity5);
+    sceneGraphBase.addChild(&backpackEntity6);
+    sceneGraphBase.addChild(&backpackEntity7);
+    sceneGraphBase.addChild(&backpackEntity8);
+    sceneGraphBase.addChild(&backpackEntity9);
+    sceneGraphBase.addChild(&backpackEntity10);*/
 
     for (int i = 0; i < 100; i++) {
         ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-        bpEnts.push_back(test);
+        sceneGraphBase.addChild(test);
     }
 
     //for (int i = 0; i <= 10; i++) {
     //    ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3((i/10.0f) * pow(10, i), 0.0f, 1*pow(10,i)), 1.0f);
-    //    bpEnts.push_back(test);
+    //    sceneGraphBase.addChild(test);
     //}
 
     //for (ModelEntity* bp : bpEnts) {
@@ -216,10 +216,7 @@ int main() {
 
         mainCam.updateRelativeViewMatrix();
 
-        for (ModelEntity* bp : bpEnts) {
-            mainRenderer.PushEntity(*bp);
-        }
-        mainRenderer.renderAllPushed(sceneGraphBase);
+        mainRenderer.renderSceneGraph(sceneGraphBase);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

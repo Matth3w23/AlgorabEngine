@@ -39,7 +39,6 @@ void Entity::setParent(Entity* ent) {
 	parent = ent;
 }
 
-
 //////////////
 //MODEL ENTITY
 //////////////
@@ -58,14 +57,20 @@ Model* ModelEntity::getModel() {
 	return model;
 }
 
-
-
 float ModelEntity::getFurVertDist() {
 	return model->getfurVertDist();
 }
 
 void ModelEntity::setModel(Model* mod) {
 	model = mod;
+}
+
+void ModelEntity::setHidden(bool val) {
+	hidden = val;
+}
+
+bool ModelEntity::getHidden() {
+	return hidden;
 }
 
 ///////////////////////
@@ -144,20 +149,38 @@ void EntityGrouper::clearChildren() {
 
 }
 
-void EntityGrouper::updateFurthestDistance(UFVec3 childPos, float childFurDist) {
+void EntityGrouper::updateFurthestDistance(UFVec3 childPos, float childFurDist, float childScale) {
 	glm::vec3 posDiff = uFVecToVec(uFVecSub(position, childPos));
 	float length = glm::length(posDiff);
-	furthestDistance = std::max(length + childFurDist, furthestDistance);
+	furthestDistance = std::max((length + childFurDist) * childScale, furthestDistance);
 }
+
+void EntityGrouper::updateFurthestDistance() {
+	for (EntityGrouper* eg : childGroups) {
+		updateFurthestDistance(eg->getPosition(), eg->getFurthestDistance(), eg->getScale());
+	}
+	for (ModelEntity* me : childModels) {
+		updateFurthestDistance(me->getPosition(), me->getFurVertDist(), me->getScale());
+	}
+}
+
 
 float EntityGrouper::getFurthestDistance() {
 	return furthestDistance;
 }
 
-void EntityGrouper::setChildRendered(bool renderBool) {
-	childrenToBeRendered = renderBool;
+std::vector<EntityGrouper*>* EntityGrouper::getChildGroups() {
+	return &childGroups;
 }
 
-bool EntityGrouper::getChildrenToBeRendered() {
-	return childrenToBeRendered;
+std::vector<ModelEntity*>* EntityGrouper::getChildModels() {
+	return &childModels;
+}
+
+void EntityGrouper::setHidden(bool val) {
+	hidden = val;
+}
+
+bool EntityGrouper::getHidden() {
+	return hidden;
 }

@@ -53,13 +53,15 @@ private:
 	glm::mat4 viewMat;
 	glm::mat4 projMat;
 
+	void scanGroup(EntityGrouper* entGroup, glm::vec4& relViewMat, bool fullyOnScreen, int bucket);
+
 	void renderModelEntity(ModelEntity* modelEnt, float currentBucketScale = 1.0f);
 	void renderPointEntity(PointEntity* pointEnt);
 	void renderBucket(unsigned int bucket, std::vector<ModelEntity*>& modEnts);
 
 	void clearAllBuckets();
 public:
-	void renderAllMarked(EntityGrouper baseGroup);
+	void renderSceneGraph(EntityGrouper baseGroup);
 
 	Camera* getCurrentCamera();
 	RenderTarget& getTarget();

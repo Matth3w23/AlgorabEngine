@@ -37,6 +37,7 @@ public:
 class ModelEntity : public Entity {
 private:
 	Model* model;
+	bool hidden = false;
 public:
 	ModelEntity(Model* mod, glm::vec3 pos, float scl = 1.0f);
 	ModelEntity(Model* mod, UFVec3 pos = UFVec3(), float scl = 1.0f);
@@ -45,6 +46,9 @@ public:
 	float getFurVertDist();
 
 	void setModel(Model* mod);
+
+	void setHidden(bool val);
+	bool getHidden();
 	
 };
 
@@ -68,8 +72,10 @@ class EntityGrouper : public Entity {
 private:
 	std::vector<EntityGrouper*> childGroups;
 	std::vector<ModelEntity*> childModels;
-	float furthestDistance; //just a float, doesn't have to be too precise?
+	float furthestDistance; //just a float, doesn't have to be too precise? Not scaled by scale in storage
 	bool childrenToBeRendered = false;
+
+	bool hidden = false;
 	
 public:
 	void addChild(EntityGrouper* ent); //check if entity not already a child
@@ -80,10 +86,14 @@ public:
 
 	void clearChildren();
 
-	void updateFurthestDistance(UFVec3 childPos, float childFurDist);
+	void updateFurthestDistance(UFVec3 childPos, float childFurDist, float childScale);
+	void updateFurthestDistance();
 	float getFurthestDistance();
 
-	void setChildRendered(bool renderBool);
-	bool getChildrenToBeRendered();
+	std::vector<EntityGrouper*>* getChildGroups();
+	std::vector<ModelEntity*>* getChildModels();
+
+	void setHidden(bool val);
+	bool getHidden();
 
 };

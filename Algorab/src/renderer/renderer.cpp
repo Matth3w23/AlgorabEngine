@@ -11,7 +11,7 @@ float pointMinRadius = 5;
 
 //WINDOW IS CURRENTLY HARD SET AT 800*600, IN FUTURE USE TARGET STUFF
 
-void Renderer::renderAllMarked(EntityGrouper baseGroup) {
+void Renderer::renderSceneGraph(EntityGrouper baseGroup) {
 
     //iterate over tree, checking if children to render
     //if find marked child, push to model ents to render
@@ -25,6 +25,10 @@ void Renderer::renderAllMarked(EntityGrouper baseGroup) {
 
     viewMat = currentCamera->getRelativeViewMatrix();
     projMat = currentCamera->getProjectionMatrix();
+
+    //retrieve
+
+
 
     //sort into buckets
     float dist;
@@ -172,6 +176,106 @@ void Renderer::renderAllMarked(EntityGrouper baseGroup) {
     std::cout << "Draw Calls: " << drawCalls << std::endl;
     std::cout << "------------" << std::endl;
 #endif // DEBUG    
+}
+
+void Renderer::scanGroup(EntityGrouper* entGroup, glm::vec4& relViewMat, bool fullyOnScreen, int bucket) {
+    //check if group has child to be rendered
+    //check if group on screen
+    //calculate min/max buckets
+
+    //push models to !renderer/buckets
+    //remove all child to be rendered tags
+    bool foScreen = false;
+    int bckt = -1;
+    
+
+    if (entGroup->getHidden()) {
+        return;
+    }
+    
+    glm::vec3 posDif = uFVecToVec(uFVecSub(entGroup->getPosition(), currentCamera->getPosition()));
+    glm::vec4 relCamPos = relViewMat *glm::vec4(posDif, 1.0f);
+    entGroup->posDif = posDif;
+    entGroup->relCamPos = relCamPos;
+    float distance = posDif.length();
+
+    //ENTITY GROUP
+    if (!fullyOnScreen) {
+        //frustum stuff
+        //if not on screen stop
+        //if half continue
+        //if fully foScreen = true
+    }
+    
+    float zDist;
+    float min;
+    float max;
+    float furVertDist;
+    unsigned int smallestBucket;
+    unsigned int largestBucket;
+    if (bucket == -1) { //not one bucket yet
+        zDist = relCamPos.z;
+        float entScaledFurDist = entGroup->getFurthestDistance() * entGroup->getScale();
+        min = zDist - entScaledFurDist;
+        max = zDist + entScaledFurDist;
+
+        if (max < minimumCutOff) { //behind the camera
+            return;
+        }
+
+        if (min < minimumCutOff) {
+            smallestBucket = 0;
+        } else {
+            smallestBucket = std::floor(std::log(min / minimumCutOff) / bucketScaleLog); //change of base to bucketscale, both should always be positive
+        }
+        largestBucket = std::floor(std::log(max / minimumCutOff) / bucketScaleLog);
+
+        if (smallestBucket == largestBucket) {
+            bckt = smallestBucket;
+        }
+    } else {
+        bckt = bucket;
+    }
+
+    //CHILD MODELS
+    for (ModelEntity* modEnt : *entGroup->getChildModels()) {
+        modEnt->posDif = uFVecToVec(uFVecSub(modEnt->getPosition(), currentCamera->getPosition()));
+        modEnt->relCamPos = viewMat * glm::vec4(modEnt->posDif, 1.0f);
+        zDist = modEnt->relCamPos.z;
+        furVertDist = modEnt->getFurVertDist() * modEnt->getScale();
+        //check if in view
+        if (!foScreen) {
+            ;
+        }
+
+        //assign to bucket
+        min = zDist - furVertDist;
+        max = zDist + furVertDist;
+        if (max < minimumCutOff) { //behind the camera
+            continue;
+        }
+        if (min < minimumCutOff) {
+            smallestBucket = 0;
+        } else {
+            smallestBucket = std::floor(std::log(min / minimumCutOff) / bucketScaleLog); //change of base to bucketscale, both should always be positive
+        }
+        largestBucket = std::floor(std::log(max / minimumCutOff) / bucketScaleLog);
+        //std::cout << "TEST: " << smallestBucket << ", " << largestBucket << std::endl;
+
+        for (int i = smallestBucket; i <= largestBucket; i++) {
+            //std::cout << "BUCKET: " << i << std::endl;
+            if (buckets.count(i) == 0) { //if the bucket doesn't exist yet
+                buckets.insert({ i, std::vector<ModelEntity*>() });
+            }
+
+            buckets[i].push_back(modEnt);
+        }
+    }
+
+    //CHILD GROUPS
+    for (EntityGrouper* entGrp : *entGroup->getChildGroups()) {
+        scanGroup(entGrp, relViewMat, foScreen, bckt);
+    }
 }
 
 
