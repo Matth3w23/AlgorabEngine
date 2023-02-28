@@ -13,9 +13,6 @@ protected:
 	glm::vec3 relPosition;
 	UFVec3* anchorPosition = &defaultAnchor; //TODO: Have default anchor in anchor class
 	float scale = 1.0f;
-
-	Entity* parent = nullptr; //assume default (position 0, scale 1, etc.)
-	
 public:
 	glm::vec3 posDif; //need to rename
 	glm::vec4 relCamPos;
@@ -29,15 +26,53 @@ public:
 
 	float getScale();
 	void setScale(float scl);
-
-	Entity* getParent();
-	void setParent(Entity* ent);
 };
+
+class ModelEntity; //this is a mess and needs to be cleaned up
+
+class EntityGrouper : public Entity {
+private:
+	std::vector<EntityGrouper*> childGroups;
+	std::vector<ModelEntity*> childModels;
+	float furthestDistance; //just a float, doesn't have to be too precise? Not scaled by scale in storage
+	bool childrenToBeRendered = false;
+
+	EntityGrouper* parent = nullptr; //assume default (position 0, scale 1, etc.)
+
+	bool hidden = false;
+
+public:
+	void addChild(EntityGrouper* ent); //check if entity not already a child
+	void addChild(ModelEntity* ent);
+
+	void removeChild(EntityGrouper* ent);
+	void removeChild(ModelEntity* ent);
+
+	void clearChildren();
+
+	bool updateFurthestDistance(UFVec3 childPos, float childFurDist, float childScale);
+	bool updateFurthestDistance();
+	float getFurthestDistance();
+
+	std::vector<EntityGrouper*>* getChildGroups();
+	std::vector<ModelEntity*>* getChildModels();
+
+	void setHidden(bool val);
+	bool getHidden();
+
+	EntityGrouper* getParent();
+	void setParent(EntityGrouper* ent);
+
+};
+
+
 
 class ModelEntity : public Entity {
 private:
 	Model* model;
 	bool hidden = false;
+
+	EntityGrouper* parent = nullptr; //assume default (position 0, scale 1, etc.)
 public:
 	ModelEntity(Model* mod, glm::vec3 pos, float scl = 1.0f);
 	ModelEntity(Model* mod, UFVec3 pos = UFVec3(), float scl = 1.0f);
@@ -49,6 +84,9 @@ public:
 
 	void setHidden(bool val);
 	bool getHidden();
+
+	EntityGrouper* getParent();
+	void setParent(EntityGrouper* ent);
 	
 };
 
@@ -68,32 +106,3 @@ public:
 
 };
 
-class EntityGrouper : public Entity {
-private:
-	std::vector<EntityGrouper*> childGroups;
-	std::vector<ModelEntity*> childModels;
-	float furthestDistance; //just a float, doesn't have to be too precise? Not scaled by scale in storage
-	bool childrenToBeRendered = false;
-
-	bool hidden = false;
-	
-public:
-	void addChild(EntityGrouper* ent); //check if entity not already a child
-	void addChild(ModelEntity* ent);
-
-	void removeChild(EntityGrouper* ent);
-	void removeChild(ModelEntity* ent);
-
-	void clearChildren();
-
-	void updateFurthestDistance(UFVec3 childPos, float childFurDist, float childScale);
-	void updateFurthestDistance();
-	float getFurthestDistance();
-
-	std::vector<EntityGrouper*>* getChildGroups();
-	std::vector<ModelEntity*>* getChildModels();
-
-	void setHidden(bool val);
-	bool getHidden();
-
-};

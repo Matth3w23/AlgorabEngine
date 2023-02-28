@@ -121,7 +121,8 @@ int main() {
     //SCENE GRAPH
     EntityGrouper sceneGraphBase = EntityGrouper();
 
-
+    EntityGrouper childTest = EntityGrouper();
+    sceneGraphBase.addChild(&childTest);
 
 
     //model importing
@@ -147,7 +148,7 @@ int main() {
     ModelEntity backpackEntity8(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity10(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);*/
-    sceneGraphBase.addChild(&backpackEntity);
+    childTest.addChild(&backpackEntity);
     /*sceneGraphBase.addChild(&backpackEntityA);
     sceneGraphBase.addChild(&backpackEntity1);
     sceneGraphBase.addChild(&backpackEntity2);
@@ -156,13 +157,15 @@ int main() {
     sceneGraphBase.addChild(&backpackEntity5);
     sceneGraphBase.addChild(&backpackEntity6);
     sceneGraphBase.addChild(&backpackEntity7);
-    sceneGraphBase.addChild(&backpackEntity8);
+    sceneGraphBase.addChild(&backpackEntity8);w
     sceneGraphBase.addChild(&backpackEntity9);
     sceneGraphBase.addChild(&backpackEntity10);*/
 
+
+
     for (int i = 0; i < 100; i++) {
         ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-        sceneGraphBase.addChild(test);
+        childTest.addChild(test);
     }
 
     //for (int i = 0; i <= 10; i++) {

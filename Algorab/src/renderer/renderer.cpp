@@ -27,50 +27,7 @@ void Renderer::renderSceneGraph(EntityGrouper baseGroup) {
     projMat = currentCamera->getProjectionMatrix();
 
     //retrieve
-
-
-
-    //sort into buckets
-    float dist;
-    float min;
-    float max;
-    float furVertDist;
-    unsigned int smallestBucket;
-    unsigned int largestBucket;
-    for (ModelEntity* modEnt : modelEntsToRender) {
-        modEnt->posDif = uFVecToVec(uFVecSub(modEnt->getPosition(), currentCamera->getPosition()));
-        modEnt->relCamPos = viewMat * glm::vec4(modEnt->posDif, 1.0f);
-        dist = modEnt->relCamPos.z; //TODO probably very inefficient, needs looking at - store in modEnt for later
-        furVertDist = modEnt->getFurVertDist() * modEnt->getScale();
-        min = dist - furVertDist;
-        max = dist + furVertDist;
-
-        if (max < minimumCutOff) { //behind the camera
-            continue;
-        }
-
-        if (min < minimumCutOff) {
-            smallestBucket = 0;
-        } else {
-            smallestBucket = std::floor(std::log(min / minimumCutOff) / bucketScaleLog); //change of base to bucketscale, both should always be positive
-        }
-        largestBucket = std::floor(std::log(max / minimumCutOff) / bucketScaleLog);
-        //std::cout << "TEST: " << smallestBucket << ", " << largestBucket << std::endl;
-
-        for (int i = smallestBucket; i <= largestBucket; i++) {
-            //std::cout << "BUCKET: " << i << std::endl;
-            if (buckets.count(i) == 0) { //if the bucket doesn't exist yet
-                buckets.insert({ i, std::vector<ModelEntity*>()});
-            }
-
-            buckets[i].push_back(modEnt);
-        }
-
-        //renderModelEntity(modEnt, smallBuck, largeBuck)
-        //represent buckets as 'i' and frame buffer instead
-
-    }
-
+    scanGroup(&baseGroup, false, -1);
 
     //from largest bucket to smallest
     //scale down and draw
@@ -104,7 +61,7 @@ void Renderer::renderSceneGraph(EntityGrouper baseGroup) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //glClearColor(0.1f, 0.5f, 0.1f, 1.0f);
     //glClear(GL_COLOR_BUFFER_BIT);
-    //screenShader.use();
+    //screenShader.use();j
     //screenShader.setInt("screenTexture", 15);
     //glBindVertexArray(target.getScreenVAO());
     //glDisable(GL_DEPTH_TEST);
@@ -178,13 +135,15 @@ void Renderer::renderSceneGraph(EntityGrouper baseGroup) {
 #endif // DEBUG    
 }
 
-void Renderer::scanGroup(EntityGrouper* entGroup, glm::vec4& relViewMat, bool fullyOnScreen, int bucket) {
+void Renderer::scanGroup(EntityGrouper* entGroup, bool fullyOnScreen, int bucket) {
     //check if group has child to be rendered
     //check if group on screen
     //calculate min/max buckets
 
     //push models to !renderer/buckets
     //remove all child to be rendered tags
+
+    //TODO: UPDATE POSITIONS DEPENDING ON PARENT POSITION
     bool foScreen = false;
     int bckt = -1;
     
@@ -194,7 +153,7 @@ void Renderer::scanGroup(EntityGrouper* entGroup, glm::vec4& relViewMat, bool fu
     }
     
     glm::vec3 posDif = uFVecToVec(uFVecSub(entGroup->getPosition(), currentCamera->getPosition()));
-    glm::vec4 relCamPos = relViewMat *glm::vec4(posDif, 1.0f);
+    glm::vec4 relCamPos = viewMat *glm::vec4(posDif, 1.0f);
     entGroup->posDif = posDif;
     entGroup->relCamPos = relCamPos;
     float distance = posDif.length();
@@ -236,9 +195,11 @@ void Renderer::scanGroup(EntityGrouper* entGroup, glm::vec4& relViewMat, bool fu
     } else {
         bckt = bucket;
     }
+    //CHECK IF RENDER GROUP AS A POINT
 
     //CHILD MODELS
     for (ModelEntity* modEnt : *entGroup->getChildModels()) {
+        //std::cout << "RENDERMODENT" << std::endl;
         modEnt->posDif = uFVecToVec(uFVecSub(modEnt->getPosition(), currentCamera->getPosition()));
         modEnt->relCamPos = viewMat * glm::vec4(modEnt->posDif, 1.0f);
         zDist = modEnt->relCamPos.z;
@@ -274,7 +235,7 @@ void Renderer::scanGroup(EntityGrouper* entGroup, glm::vec4& relViewMat, bool fu
 
     //CHILD GROUPS
     for (EntityGrouper* entGrp : *entGroup->getChildGroups()) {
-        scanGroup(entGrp, relViewMat, foScreen, bckt);
+        scanGroup(entGrp, foScreen, bckt);
     }
 }
 
@@ -454,15 +415,6 @@ void Renderer::setCurrentCamera(Camera* cam) {
 
 void Renderer::setTarget(unsigned int tar) {
     target = tar;
-}
-
-void Renderer::PushEntity(ModelEntity& modEnt) {
-    modelEntsToRender.push_back(&modEnt);
-    //need to update tree
-}
-
-void Renderer::PushEntity(PointEntity& pEnt) {
-    pointsToRender.push_back(&pEnt);
 }
 
 Renderer::Renderer(Camera* cam, RenderTarget& tar) :

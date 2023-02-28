@@ -53,7 +53,7 @@ private:
 	glm::mat4 viewMat;
 	glm::mat4 projMat;
 
-	void scanGroup(EntityGrouper* entGroup, glm::vec4& relViewMat, bool fullyOnScreen, int bucket);
+	void scanGroup(EntityGrouper* entGroup, bool fullyOnScreen, int bucket);
 
 	void renderModelEntity(ModelEntity* modelEnt, float currentBucketScale = 1.0f);
 	void renderPointEntity(PointEntity* pointEnt);

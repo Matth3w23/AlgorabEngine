@@ -31,11 +31,123 @@ void Entity::setScale(float scl) {
 	scale = scl;
 }
 
-Entity* Entity::getParent() {
+////////////////
+//ENTITY GROUPER
+////////////////
+
+//need to update furthest distance
+void EntityGrouper::addChild(EntityGrouper* ent) {
+	if (std::find(childGroups.begin(), childGroups.end(), ent) == childGroups.end()) {
+		childGroups.push_back(ent);
+		ent->setParent(this);
+
+		updateFurthestDistance(ent->getPosition(), ent->getFurthestDistance(), ent->getScale());
+	}
+
+	//note this doesn't check for cyclical children, which would cause issues
+}
+void EntityGrouper::addChild(ModelEntity* ent) {
+	auto test = std::find(childModels.begin(), childModels.end(), ent);
+	if (std::find(childModels.begin(), childModels.end(), ent) == childModels.end()) {
+		childModels.push_back(ent);
+
+		updateFurthestDistance(ent->getPosition(), ent->getFurVertDist(), ent->getScale());
+	}
+
+	//note this doesn't check for cyclical children, which would cause issues
+}
+
+void EntityGrouper::removeChild(EntityGrouper* ent) {
+	auto find = std::find(childGroups.begin(), childGroups.end(), ent);
+	if (find != childGroups.end()) {
+		childGroups.erase(find);
+	}
+
+	updateFurthestDistance();
+}
+void EntityGrouper::removeChild(ModelEntity* ent) {
+	auto find = std::find(childModels.begin(), childModels.end(), ent);
+	if (find != childModels.end()) {
+		childModels.erase(find);
+	}
+
+	updateFurthestDistance();
+}
+
+void EntityGrouper::clearChildren() {
+	for (EntityGrouper* e : childGroups) {
+		e->setParent(nullptr);
+	}
+	for (ModelEntity* e : childModels) {
+		e->setParent(nullptr);
+	}
+
+	childGroups.clear();
+	childModels.clear();
+
+}
+
+bool EntityGrouper::updateFurthestDistance(UFVec3 childPos, float childFurDist, float childScale) {
+	glm::vec3 posDiff = uFVecToVec(uFVecSub(position, childPos));
+	float length = glm::length(posDiff);
+	float potFurDist = length + childFurDist * childScale;
+	if (potFurDist > furthestDistance) {
+		furthestDistance = potFurDist;
+		if (parent) {
+			parent->updateFurthestDistance(position, furthestDistance, scale);
+		}
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool EntityGrouper::updateFurthestDistance() {
+	bool fdUpdated = false;
+	for (EntityGrouper* eg : childGroups) {
+		if (updateFurthestDistance(eg->getPosition(), eg->getFurthestDistance(), eg->getScale())) {
+			fdUpdated = true;
+		}
+	}
+	for (ModelEntity* me : childModels) {
+		if (updateFurthestDistance(me->getPosition(), me->getFurVertDist(), me->getScale())) {
+			fdUpdated = true;
+		}
+	}
+
+	if (fdUpdated) {
+		parent->updateFurthestDistance();
+	}
+
+	return fdUpdated;
+}
+
+
+float EntityGrouper::getFurthestDistance() {
+	return furthestDistance;
+}
+
+std::vector<EntityGrouper*>* EntityGrouper::getChildGroups() {
+	return &childGroups;
+}
+
+std::vector<ModelEntity*>* EntityGrouper::getChildModels() {
+	return &childModels;
+}
+
+void EntityGrouper::setHidden(bool val) {
+	hidden = val;
+}
+
+bool EntityGrouper::getHidden() {
+	return hidden;
+}
+
+EntityGrouper* EntityGrouper::getParent() {
 	return parent;
 }
 
-void Entity::setParent(Entity* ent) {
+void EntityGrouper::setParent(EntityGrouper* ent) {
 	parent = ent;
 }
 
@@ -73,6 +185,14 @@ bool ModelEntity::getHidden() {
 	return hidden;
 }
 
+EntityGrouper* ModelEntity::getParent() {
+	return parent;
+}
+
+void ModelEntity::setParent(EntityGrouper* ent) {
+	parent = ent;
+}
+
 ///////////////////////
 //POINT ENTITY (UNUSED)
 ///////////////////////
@@ -99,88 +219,4 @@ void PointEntity::setConstantScale(bool conScl) {
 }
 
 
-////////////////
-//ENTITY GROUPER
-////////////////
 
-//need to update furthest distance
-void EntityGrouper::addChild(EntityGrouper* ent) {
-	if (std::find(childGroups.begin(), childGroups.end(), ent) != childGroups.end()) {
-		childGroups.push_back(ent);
-
-		glm::vec3 posDiff = uFVecToVec(uFVecSub(position, ent->getPosition()));
-		float length = glm::length(posDiff);
-		furthestDistance = std::max(length + ent->getFurthestDistance(), furthestDistance);
-	}
-
-	//note this doesn't check for cyclical children, which would cause issues
-}
-void EntityGrouper::addChild(ModelEntity* ent) {
-	if (std::find(childModels.begin(), childModels.end(), ent) != childModels.end()) {
-		childModels.push_back(ent);
-	}
-
-	//note this doesn't check for cyclical children, which would cause issues
-}
-
-void EntityGrouper::removeChild(EntityGrouper* ent) {
-	auto find = std::find(childGroups.begin(), childGroups.end(), ent);
-	if (find != childGroups.end()) {
-		childGroups.erase(find);
-	}
-}
-void EntityGrouper::removeChild(ModelEntity* ent) {
-	auto find = std::find(childModels.begin(), childModels.end(), ent);
-	if (find != childModels.end()) {
-		childModels.erase(find);
-	}
-}
-
-void EntityGrouper::clearChildren() {
-	for (EntityGrouper* e: childGroups) {
-		e->setParent(nullptr);
-	}
-	for (ModelEntity* e : childModels) {
-		e->setParent(nullptr);
-	}
-
-	childGroups.clear();
-	childModels.clear();
-
-}
-
-void EntityGrouper::updateFurthestDistance(UFVec3 childPos, float childFurDist, float childScale) {
-	glm::vec3 posDiff = uFVecToVec(uFVecSub(position, childPos));
-	float length = glm::length(posDiff);
-	furthestDistance = std::max((length + childFurDist) * childScale, furthestDistance);
-}
-
-void EntityGrouper::updateFurthestDistance() {
-	for (EntityGrouper* eg : childGroups) {
-		updateFurthestDistance(eg->getPosition(), eg->getFurthestDistance(), eg->getScale());
-	}
-	for (ModelEntity* me : childModels) {
-		updateFurthestDistance(me->getPosition(), me->getFurVertDist(), me->getScale());
-	}
-}
-
-
-float EntityGrouper::getFurthestDistance() {
-	return furthestDistance;
-}
-
-std::vector<EntityGrouper*>* EntityGrouper::getChildGroups() {
-	return &childGroups;
-}
-
-std::vector<ModelEntity*>* EntityGrouper::getChildModels() {
-	return &childModels;
-}
-
-void EntityGrouper::setHidden(bool val) {
-	hidden = val;
-}
-
-bool EntityGrouper::getHidden() {
-	return hidden;
-}
