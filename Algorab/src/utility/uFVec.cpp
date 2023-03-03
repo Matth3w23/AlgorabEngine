@@ -111,3 +111,21 @@ glm::vec4 uFVecToVec(UFVec4 uVec) {
 		UFloat::uFloatToFloat(uVec.w));
 	return temp;
 }
+
+UFVec3 uFVecFloatMult(UFVec3 a, float b) {
+	UFVec3 temp = UFVec3(
+		UFloat::floatMult(a.x, b),
+		UFloat::floatMult(a.y, b),
+		UFloat::floatMult(a.z, b)
+	);
+	return temp;
+}
+UFVec4 uFVecFloatMult(UFVec4 a, float b) {
+	UFVec4 temp = UFVec4(
+		UFloat::floatMult(a.x, b),
+		UFloat::floatMult(a.y, b),
+		UFloat::floatMult(a.z, b),
+		UFloat::floatMult(a.w, b)
+	);
+	return temp;
+}

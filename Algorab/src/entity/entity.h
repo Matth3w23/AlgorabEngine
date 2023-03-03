@@ -4,7 +4,7 @@
 #include "../utility/uFVec.h"
 
 
-
+//TODO: Clean up with some getters and setters (e.g. posDif, relScale)
 class Entity {
 protected:
 	UFVec3 defaultAnchor = UFVec3(0.0f, 0.0f, 0.0f);
@@ -13,9 +13,11 @@ protected:
 	glm::vec3 relPosition;
 	UFVec3* anchorPosition = &defaultAnchor; //TODO: Have default anchor in anchor class
 	float scale = 1.0f;
+	
 public:
 	glm::vec3 posDif; //need to rename
 	glm::vec4 relCamPos;
+	float relScale = scale;
 
 	Entity(glm::vec3 pos);
 	Entity(UFVec3 pos = UFVec3());
@@ -60,6 +62,11 @@ public:
 	void setHidden(bool val);
 	bool getHidden();
 
+	void setPosition(UFVec3 pos);
+	void setPosition(glm::vec3 pos);
+
+	void setScale(float scl);
+
 	EntityGrouper* getParent();
 	void setParent(EntityGrouper* ent);
 
@@ -85,11 +92,17 @@ public:
 	void setHidden(bool val);
 	bool getHidden();
 
+	void setPosition(UFVec3 pos);
+	void setPosition(glm::vec3 pos);
+
+	void setScale(float scl);
+
 	EntityGrouper* getParent();
 	void setParent(EntityGrouper* ent);
 	
 };
 
+//not used currently
 class PointEntity : public Entity {
 private:
 	glm::vec4 colour;

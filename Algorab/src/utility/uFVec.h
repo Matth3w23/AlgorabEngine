@@ -44,5 +44,8 @@ UFVec4 uFVecSum(UFVec4 a, UFVec4 b);
 UFVec3 uFVecSub(UFVec3 a, UFVec3 b);
 UFVec4 uFVecSub(UFVec4 a, UFVec4 b);
 
+UFVec3 uFVecFloatMult(UFVec3 a, float b);
+UFVec4 uFVecFloatMult(UFVec4 a, float b);
+
 glm::vec3 uFVecToVec(UFVec3 uVec);
 glm::vec4 uFVecToVec(UFVec4 uVec);

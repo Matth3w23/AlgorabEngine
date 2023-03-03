@@ -20,7 +20,15 @@
 #include <glm/gtx/string_cast.hpp>
 
 
+struct Point {
+	glm::vec3* pos;
+	float rad;
 
+	Point(glm::vec3* p, float r) {
+		pos = p;
+		rad = r;
+	}
+};
 
 class Renderer {
 private:
@@ -36,7 +44,7 @@ private:
 
 	std::vector<unsigned int> textureUnitCurrentIds; //stores id's of textures already loaded in
 
-	std::map<unsigned int, std::vector<ModelEntity*>> buckets;
+	std::map<unsigned int, std::pair<std::vector<ModelEntity*>, std::vector<Point>>> buckets;
 
 	const float bucketScale = 10000.0f; //scale between the near plane and the far plane in bucket
 	double bucketScaleLog = std::log(bucketScale);
@@ -53,11 +61,11 @@ private:
 	glm::mat4 viewMat;
 	glm::mat4 projMat;
 
-	void scanGroup(EntityGrouper* entGroup, bool fullyOnScreen, int bucket);
+	void scanGroup(EntityGrouper* entGroup, UFVec3 curAccPos, float curMulScale, bool fullyOnScreen, int bucket);
 
 	void renderModelEntity(ModelEntity* modelEnt, float currentBucketScale = 1.0f);
 	void renderPointEntity(PointEntity* pointEnt);
-	void renderBucket(unsigned int bucket, std::vector<ModelEntity*>& modEnts);
+	void renderBucket(unsigned int bucket, std::pair<std::vector<ModelEntity*>, std::vector<Point>>& ents);
 
 	void clearAllBuckets();
 public:

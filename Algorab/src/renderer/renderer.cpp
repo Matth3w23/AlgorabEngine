@@ -2,8 +2,8 @@
 
 //float pointAngle = M_PI*(0.1f/180.0f);
 //float disappearAngle = M_PI * (0.01f / 180.0f); //TODO: Implement these differently
-float pointPix = 30;
-float disPix = 10;
+float pointPix = 10;
+float disPix = -1;
 float pointAngle = atan((pointPix * 2 * tan(M_PI * (0.5 * 60 / 180)))/800);
 float disappearAngle = atan((disPix * 2 * tan(M_PI * (0.5 * 60 / 180))) / 800);
 //float disappearAngle = -0.1;
@@ -27,7 +27,7 @@ void Renderer::renderSceneGraph(EntityGrouper baseGroup) {
     projMat = currentCamera->getProjectionMatrix();
 
     //retrieve
-    scanGroup(&baseGroup, false, -1);
+    scanGroup(&baseGroup, UFVec3(0), 1.0f, false, -1);
 
     //from largest bucket to smallest
     //scale down and draw
@@ -135,7 +135,7 @@ void Renderer::renderSceneGraph(EntityGrouper baseGroup) {
 #endif // DEBUG    
 }
 
-void Renderer::scanGroup(EntityGrouper* entGroup, bool fullyOnScreen, int bucket) {
+void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3 curAccPos, float curMulScale, bool fullyOnScreen, int bucket) {
     //check if group has child to be rendered
     //check if group on screen
     //calculate min/max buckets
@@ -143,20 +143,24 @@ void Renderer::scanGroup(EntityGrouper* entGroup, bool fullyOnScreen, int bucket
     //push models to !renderer/buckets
     //remove all child to be rendered tags
 
-    //TODO: UPDATE POSITIONS DEPENDING ON PARENT POSITION
+    
     bool foScreen = false;
     int bckt = -1;
+
+    float curGroupScale = entGroup->getScale() * curMulScale;
+    UFVec3 currentGroupPos = uFVecSum(entGroup->getPosition(), curAccPos);
+    
     
 
     if (entGroup->getHidden()) {
         return;
     }
     
-    glm::vec3 posDif = uFVecToVec(uFVecSub(entGroup->getPosition(), currentCamera->getPosition()));
+    glm::vec3 posDif = uFVecToVec(uFVecSub(currentGroupPos, currentCamera->getPosition()));
     glm::vec4 relCamPos = viewMat *glm::vec4(posDif, 1.0f);
     entGroup->posDif = posDif;
     entGroup->relCamPos = relCamPos;
-    float distance = posDif.length();
+    float distance = glm::length(posDif);
 
     //ENTITY GROUP
     if (!fullyOnScreen) {
@@ -165,19 +169,55 @@ void Renderer::scanGroup(EntityGrouper* entGroup, bool fullyOnScreen, int bucket
         //if half continue
         //if fully foScreen = true
     }
-    
+
+    //check if render as single point
     float zDist;
     float min;
     float max;
     float furVertDist;
+
+    zDist = relCamPos.z;
+    float entScaledFurDist = entGroup->getFurthestDistance() * curGroupScale;
+    double angle = std::atan(entScaledFurDist / distance);
+    //std::cout << "ANGLE: " << angle << std::endl;
+    //std::cout << "POSD: " << posDif.x << "," << posDif.y << "," << posDif.z << std::endl;
+    //std::cout << "L: " << distance << std::endl;
+    //std::cout << "---------------------------------" << std::endl;
+
+    if (angle < disappearAngle) {
+        //don't render
+        return;
+    } else if (angle < pointAngle) { //currently need to check if the group has content, right now I assume it has a model child somewhere
+        float pointRadius = (800 * tan(angle)) / (2 * tan(M_PI * (0.5 * 60 / 180)));
+        //*2 and pointMinRad considered later on
+
+        float bucket = std::floor(std::log(zDist / minimumCutOff) / bucketScaleLog);
+
+        if (buckets.count(bucket) == 0) { //if the bucket doesn't exist yet
+            buckets.insert({ bucket, std::pair<
+                std::vector<ModelEntity*>,
+                std::vector<Point>
+            >() });
+        }
+
+        Point p = Point(&entGroup->posDif, pointRadius);
+        
+
+        buckets[bucket].second.push_back(p);
+
+        //don't draw further
+        return;
+    }
+    
+
+
+
     unsigned int smallestBucket;
     unsigned int largestBucket;
     if (bucket == -1) { //not one bucket yet
-        zDist = relCamPos.z;
-        float entScaledFurDist = entGroup->getFurthestDistance() * entGroup->getScale();
+        
         min = zDist - entScaledFurDist;
         max = zDist + entScaledFurDist;
-
         if (max < minimumCutOff) { //behind the camera
             return;
         }
@@ -195,24 +235,30 @@ void Renderer::scanGroup(EntityGrouper* entGroup, bool fullyOnScreen, int bucket
     } else {
         bckt = bucket;
     }
-    //CHECK IF RENDER GROUP AS A POINT
+
 
     //CHILD MODELS
     for (ModelEntity* modEnt : *entGroup->getChildModels()) {
         //std::cout << "RENDERMODENT" << std::endl;
-        modEnt->posDif = uFVecToVec(uFVecSub(modEnt->getPosition(), currentCamera->getPosition()));
+        float modelTrueScale = modEnt->getScale() * curGroupScale;
+        modEnt->relScale = modelTrueScale;
+        modEnt->posDif = uFVecToVec(uFVecSub(
+            uFVecSum(modEnt->getPosition(), currentGroupPos),
+            currentCamera->getPosition()
+        ));
         modEnt->relCamPos = viewMat * glm::vec4(modEnt->posDif, 1.0f);
         zDist = modEnt->relCamPos.z;
-        furVertDist = modEnt->getFurVertDist() * modEnt->getScale();
-        //check if in view
+        furVertDist = modEnt->getFurVertDist() * modelTrueScale;
+        //TODO: check if in view
         if (!foScreen) {
             ;
         }
 
         //assign to bucket
+        //check if as point?
         min = zDist - furVertDist;
         max = zDist + furVertDist;
-        if (max < minimumCutOff) { //behind the camera
+        if (max < minimumCutOff) { //behind the camera near plane
             continue;
         }
         if (min < minimumCutOff) {
@@ -226,21 +272,24 @@ void Renderer::scanGroup(EntityGrouper* entGroup, bool fullyOnScreen, int bucket
         for (int i = smallestBucket; i <= largestBucket; i++) {
             //std::cout << "BUCKET: " << i << std::endl;
             if (buckets.count(i) == 0) { //if the bucket doesn't exist yet
-                buckets.insert({ i, std::vector<ModelEntity*>() });
+                buckets.insert({ i, std::pair<
+                    std::vector<ModelEntity*>,
+                    std::vector<Point>
+                >()});
             }
 
-            buckets[i].push_back(modEnt);
+            buckets[i].first.push_back(modEnt);
         }
     }
 
     //CHILD GROUPS
     for (EntityGrouper* entGrp : *entGroup->getChildGroups()) {
-        scanGroup(entGrp, foScreen, bckt);
+        scanGroup(entGrp, currentGroupPos, curGroupScale, foScreen, bckt);
     }
 }
 
 
-void Renderer::renderBucket(unsigned int bucketNum, std::vector<ModelEntity*>& modEnts) {
+void Renderer::renderBucket(unsigned int bucketNum, std::pair<std::vector<ModelEntity*>, std::vector<Point>>& ents) {
     //work out scale for bucket
     //scale between 1 and 1*bucketscale?
     //same as renderModelEntity but transform/model matrix affected by bucket scale
@@ -250,18 +299,20 @@ void Renderer::renderBucket(unsigned int bucketNum, std::vector<ModelEntity*>& m
 
     pointData.clear();
 
-    for (ModelEntity* modEnt : modEnts) {
+    for (ModelEntity* modEnt : ents.first) {
         renderModelEntity(modEnt, currentBucketScale);
     }
+
+    for (Point p : ents.second) {
+        glm::vec3 pPos = *p.pos * currentBucketScale;
+        pointData.insert(pointData.end(), { pPos.x, pPos.y, pPos.z });
+        pointData.push_back(std::max(p.rad * 2, pointMinRadius));
+        pointData.insert(pointData.end(), { 0.2, 0.3, 0.6 }); //TODO: Colour
+    }
+
     //std::cout << "TEST";
 
     if (pointData.empty() == false) {
-        float test[] = { 0.0f, 0.0f, 0.0f};
-        float vertices[] = {
-            0.5f, -0.5f, 0.0f,
-            -0.5f, -0.5f, 0.0f,
-            0.0f,  0.5f, 0.0f
-        };
         //Shader testShader("assets/shaders/testShader.vs", "assets/shaders/testShader.fs");
         //testShader.use();
         pointShader.use();
@@ -299,7 +350,7 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
     //std::cout << "[" << posDiff.x << "," << posDiff.y << "," << posDiff.z << "]" << std::endl;
 
     //work out whether to render as point or not render at all
-    float radius = modelEnt->getFurVertDist()*modelEnt->getScale();
+    float radius = modelEnt->getFurVertDist()*modelEnt->relScale;
     float distance = glm::length(posDiff);
     double angle = std::atan(radius / distance);
     //std::cout << angle << std::endl;
@@ -318,7 +369,7 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
         pointData.push_back(std::max(pointRadius * 2, pointMinRadius));
         //pointData.push_back(((180*angle/M_PI)/currentCamera->getFov())*800*2); //Isn't quite correct but good approximation
         pointData.insert(pointData.end(), { 0.2, 0.3, 0.6 }); //TODO: Colour
-
+        
 
         //render all points at once
         //create array/vertex of points (position, size, colour)
@@ -326,7 +377,7 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
     } else {
 
         modelMat = glm::translate(modelMat, (posDiff)*currentBucketScale); //camera relative world position
-        modelMat = glm::scale(modelMat, glm::vec3(modelEnt->getScale() * currentBucketScale));
+        modelMat = glm::scale(modelMat, glm::vec3(modelEnt->relScale * currentBucketScale));
         texturedModelShader.setMat4("model", modelMat);
 
         //TODO: Work out/store model matrices separately, send scale to vertex shader at start, send model matrix every time (is this more efficient?)
@@ -397,7 +448,8 @@ void Renderer::renderPointEntity(PointEntity* pointEnt) {
 
 void Renderer::clearAllBuckets() { //clears all models pushed to buckets
     for (auto it = buckets.begin(); it != buckets.end(); it++) {
-        it->second.clear();
+        it->second.first.clear();
+        it->second.second.clear();
     }
 }
 

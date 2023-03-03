@@ -143,6 +143,24 @@ bool EntityGrouper::getHidden() {
 	return hidden;
 }
 
+void EntityGrouper::setPosition(UFVec3 pos) {
+	position = pos;
+	if (parent) {
+		parent->updateFurthestDistance(position, furthestDistance, scale);
+	}
+}
+
+void EntityGrouper::setPosition(glm::vec3 pos) {
+	setPosition(UFVec3(pos));
+}
+
+void EntityGrouper::setScale(float scl) {
+	scale = scl;
+	if (parent) {
+		parent->updateFurthestDistance(position, furthestDistance, scale);
+	}
+}
+
 EntityGrouper* EntityGrouper::getParent() {
 	return parent;
 }
@@ -184,6 +202,25 @@ void ModelEntity::setHidden(bool val) {
 bool ModelEntity::getHidden() {
 	return hidden;
 }
+
+void ModelEntity::setPosition(UFVec3 pos) {
+	position = pos;
+	if (parent) {
+		parent->updateFurthestDistance(position, getFurVertDist(), scale);
+	}
+}
+
+void ModelEntity::setPosition(glm::vec3 pos) {
+	setPosition(UFVec3(pos));
+}
+
+void ModelEntity::setScale(float scl) {
+	scale = scl;
+	if (parent) {
+		parent->updateFurthestDistance(position, getFurVertDist(), scale);
+	}
+}
+
 
 EntityGrouper* ModelEntity::getParent() {
 	return parent;

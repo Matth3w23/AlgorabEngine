@@ -3,7 +3,9 @@
 double deltaTime;
 
 //float moveSpeed = 9999999999999999;
-float moveSpeed = 9;
+double moveSpeed = 100;
+double moveSpeedScrollMultFactor = 1.258925411;
+
 Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false); //TODO: Change camera from being a global variable/change input functions
 
 unsigned int windowWidth = 800;
@@ -27,18 +29,19 @@ void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 }
 
 int main() {
-    std::string testFloat = "-1111";
-    UFloat t1("-0.981707");
-    UFloat t2("0.0670635");
-    UFloat t3("1111.56723");
-    UFloat t4("3754893675893465897654897685497689547698547868934876.3728756436893432684872635465");
-    UFloat t5("-84359086785367398657438965348.2184764656");
-    UFloat t6("-1732648235487.172881623457");
-    UFloat t7("-1482864826.2147823756847");
-    std::cout << UFloat::uFloatToString(t1) << std::endl;
-    std::cout << UFloat::uFloatToString(t2) << std::endl;
-    t2.add(t1);
-    std::cout << UFloat::uFloatToString(t2) << std::endl;
+    std::cout << "STARTING" << std::endl;
+    //std::string testFloat = "-1111";
+    //UFloat t1("-0.981707");
+    //UFloat t2("0.0670635");
+    //UFloat t3("1111.56723");
+    //UFloat t4("3754893675893465897654897685497689547698547868934876.3728756436893432684872635465");
+    //UFloat t5("-84359086785367398657438965348.2184764656");
+    //UFloat t6("-1732648235487.172881623457");
+    //UFloat t7("-1482864826.2147823756847");
+    //std::cout << UFloat::uFloatToString(t1) << std::endl;
+    //std::cout << UFloat::uFloatToString(t2) << std::endl;
+    //t2.add(t1);
+    //std::cout << UFloat::uFloatToString(t2) << std::endl;
     //std::cout << UFloat::uFloatToString(UFloat::sum(t2, t1)) << std::endl;
 
     //std::exit(0);
@@ -52,7 +55,7 @@ int main() {
     std::random_device rd;
     std::mt19937 gen(rd());
     //std::uniform_real_distribution<> dist(-9999999999999999, 9999999999999999);
-    std::uniform_real_distribution<> dist(0, 99);
+    std::uniform_real_distribution<> dist(0, 1);
 
     stbi_set_flip_vertically_on_load(true); //texture flip
 
@@ -85,6 +88,7 @@ int main() {
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
 
 
@@ -148,7 +152,7 @@ int main() {
     ModelEntity backpackEntity8(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
     ModelEntity backpackEntity10(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);*/
-    childTest.addChild(&backpackEntity);
+    sceneGraphBase.addChild(&backpackEntity);
     /*sceneGraphBase.addChild(&backpackEntityA);
     sceneGraphBase.addChild(&backpackEntity1);
     sceneGraphBase.addChild(&backpackEntity2);
@@ -165,8 +169,17 @@ int main() {
 
     for (int i = 0; i < 100; i++) {
         ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+        if (i < 1) {
+            test->setScale(2);
+        }
         childTest.addChild(test);
     }
+    childTest.setPosition(UFVec3(
+        UFloat("999"),
+        UFloat("0"),
+        UFloat("0")
+        ));
+    childTest.setScale(99);
 
     //for (int i = 0; i <= 10; i++) {
     //    ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3((i/10.0f) * pow(10, i), 0.0f, 1*pow(10,i)), 1.0f);
@@ -193,14 +206,18 @@ int main() {
     double currentTime;
     //double deltaTime;
     double fps;
-    double average = 0.0f;
+    double average = 0.0;
+    double timer = 0.0;
     std::stringstream ss;
+    std::stringstream frameString;
+    frameString << "Frame Time: -, FPS: -";
 
-    std::cout << "Starting" << std::endl;
 
     UFloat adjustedPos = UFloat();
     UFloat minusFive = UFloat("-5.0");
     UFloat one = UFloat("1"); //TODO: Add float addition and subtraction to UFLOAT, and maybe increment
+
+    std::cout << "Starting Main Loop" << std::endl;
 
     while (!glfwWindowShouldClose(window)) { //main loop
 
@@ -231,20 +248,24 @@ int main() {
         deltaTime = currentTime - lastTime;
         fps = 1 / deltaTime;
         lastTime = currentTime;
+        timer += deltaTime;
 
         counter++;
-        zPos.add(one);
+        //zPos.add(one);
 
         average = (average * (counter - 1) + fps) / counter;
-        if (counter >= 20) {
-            ss.str(std::string());
-            ss << "Frame Time: " << deltaTime << ", FPS: " << average << ", Z: " << (adjustedPos.toString());
-            ss << "[" << mainCam.getPosition().x.toString() << ", " << mainCam.getPosition().y.toString() << ", " << mainCam.getPosition().z.toString() << "]";
-            glfwSetWindowTitle(window, ss.str().c_str());
-            //std::cout << fps << std::endl;
+        if (timer >= 0.25) {
+            frameString.str(std::string());
+            frameString << "Frame Time: " << 1.0 / average << ", FPS: " << average;
             counter = 0;
-            average = 0.0f;
+            average = 0.0;
+            timer = 0.0;
         }
+
+        ss.str(std::string());
+        ss << frameString.str();
+        ss << ", MoveSpeed: " << moveSpeed << ", Pos: [" << mainCam.getPosition().x.toString() << ", " << mainCam.getPosition().y.toString() << ", " << mainCam.getPosition().z.toString() << "] ";
+        glfwSetWindowTitle(window, ss.str().c_str());
 
 
         //rudimentary performance stuff
@@ -340,4 +361,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     mouseLastY = ypos;
 
     mainCam.turn(offsetX * 0.25, offsetY * 0.25, true); //TODO: Add sensitivity
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    moveSpeed *= pow(moveSpeedScrollMultFactor, yoffset);
+    std::cout << yoffset << std::endl;
 }
