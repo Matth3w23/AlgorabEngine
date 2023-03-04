@@ -24,7 +24,7 @@ private:
 	glm::vec3 universeUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 	float fieldOfView = 60.0f;
-	float aspectRatio = 800.0f/600.0f;
+	float aspectRatio = 1200.0f/800.0f;
 	float nearPlane = 0.1f;
 	float farPlane = 100.0f;
 

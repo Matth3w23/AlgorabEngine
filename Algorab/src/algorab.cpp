@@ -8,8 +8,8 @@ double moveSpeedScrollMultFactor = 1.258925411;
 
 Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false); //TODO: Change camera from being a global variable/change input functions
 
-unsigned int windowWidth = 800;
-unsigned int windowHeight = 600;
+unsigned int windowWidth = 1200;
+unsigned int windowHeight = 800;
 
 //mouse input
 bool firstMouse = true;
@@ -56,6 +56,8 @@ int main() {
     std::mt19937 gen(rd());
     //std::uniform_real_distribution<> dist(-9999999999999999, 9999999999999999);
     std::uniform_real_distribution<> dist(0, 1);
+    std::uniform_real_distribution<> rand(0, 1);
+    std::uniform_real_distribution<> randn(-1, 1);
 
     stbi_set_flip_vertically_on_load(true); //texture flip
 
@@ -125,9 +127,6 @@ int main() {
     //SCENE GRAPH
     EntityGrouper sceneGraphBase = EntityGrouper();
 
-    EntityGrouper childTest = EntityGrouper();
-    sceneGraphBase.addChild(&childTest);
-
 
     //model importing
     Assimp::Importer modelImporter;
@@ -135,56 +134,57 @@ int main() {
     //test model
     Model backpackModel("assets/models/backpack/backpack.obj");
     //Model spaceShuttleModel("assets/models/spaceShuttleGLTF/scene.gltf");
-    Model spaceShuttleModel("assets/models/backpack/backpack.obj");
+    Model spaceShuttleModel("assets/models/spaceShuttleGLTF/scene.gltf");
     
     //bunch of test entities
     std::vector<ModelEntity*> bpEnts;
-    //ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
-    ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 10.0f), 1.0f);
-    /*ModelEntity backpackEntityA(&spaceShuttleModel, glm::vec3(5.0f, 0.0f, 3), 0.3f);
-    ModelEntity backpackEntity1(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity2(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity3(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity4(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity5(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity6(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity7(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity8(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity9(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-    ModelEntity backpackEntity10(&spaceShuttleModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);*/
+    ModelEntity backpackEntity(&backpackModel, glm::vec3(1.0f, 2.0f, 10.0f), 0.1f);
+    //ModelEntity backpackEntity(&backpackModel, glm::vec3(0.0f, 0.0f, 10.0f), 1.0f);
+    ModelEntity backpackEntityA(&spaceShuttleModel, glm::vec3(5.0f, 0.0f, 3), 0.1f);
+    ModelEntity backpackEntity1(&backpackModel, glm::vec3(randn(gen)*40, randn(gen) * 40, randn(gen) * 40), 1.0f);
+    ModelEntity backpackEntity2(&spaceShuttleModel, glm::vec3(randn(gen) * 40, randn(gen) * 40, randn(gen) * 40), 0.1f);
+    ModelEntity backpackEntity3(&backpackModel, glm::vec3(randn(gen) * 40, randn(gen) * 40, randn(gen) * 40), 1.0f);
+    ModelEntity backpackEntity4(&spaceShuttleModel, glm::vec3(randn(gen) * 40, randn(gen) * 40, randn(gen) * 40), 0.1f);
+    ModelEntity backpackEntity5(&backpackModel, glm::vec3(randn(gen) * 40, randn(gen) * 40, randn(gen) * 40), 1.0f);
+    ModelEntity backpackEntity6(&spaceShuttleModel, glm::vec3(randn(gen) * 40, randn(gen) * 40, randn(gen) * 40), 0.1f);
+    ModelEntity backpackEntity7(&backpackModel, glm::vec3(randn(gen) * 40, randn(gen) * 40, randn(gen) * 40), 1.0f);
+    ModelEntity backpackEntity8(&spaceShuttleModel, glm::vec3(randn(gen) * 40, randn(gen) * 40, randn(gen) * 40), 0.1f);
+    ModelEntity backpackEntity9(&backpackModel, glm::vec3(randn(gen) * 40, randn(gen) * 40, randn(gen) * 40), 1.0f);
+    ModelEntity backpackEntity10(&spaceShuttleModel, glm::vec3(randn(gen) * 40, randn(gen) * 40, randn(gen) * 40), 0.1f);
     sceneGraphBase.addChild(&backpackEntity);
-    /*sceneGraphBase.addChild(&backpackEntityA);
+    sceneGraphBase.addChild(&backpackEntityA);
     sceneGraphBase.addChild(&backpackEntity1);
     sceneGraphBase.addChild(&backpackEntity2);
     sceneGraphBase.addChild(&backpackEntity3);
-    bsceneGraphBase.addChild(&backpackEntity4);
+    sceneGraphBase.addChild(&backpackEntity4);
     sceneGraphBase.addChild(&backpackEntity5);
     sceneGraphBase.addChild(&backpackEntity6);
     sceneGraphBase.addChild(&backpackEntity7);
-    sceneGraphBase.addChild(&backpackEntity8);w
+    sceneGraphBase.addChild(&backpackEntity8);
     sceneGraphBase.addChild(&backpackEntity9);
-    sceneGraphBase.addChild(&backpackEntity10);*/
+    sceneGraphBase.addChild(&backpackEntity10);
 
 
 
-    for (int i = 0; i < 100; i++) {
-        ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
-        if (i < 1) {
-            test->setScale(2);
-        }
-        childTest.addChild(test);
-    }
-    childTest.setPosition(UFVec3(
-        UFloat("999"),
-        UFloat("0"),
-        UFloat("0")
-        ));
-    childTest.setScale(99);
-
-    //for (int i = 0; i <= 10; i++) {
-    //    ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3((i/10.0f) * pow(10, i), 0.0f, 1*pow(10,i)), 1.0f);
-    //    sceneGraphBase.addChild(test);
+    //for (int i = 0; i < 100; i++) {
+    //    ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3(dist(gen), dist(gen), dist(gen)), 1.0f);
+    //    if (i < 1) {
+    //        test->setScale(2);
+    //    }
+    //    childTest.addChild(test);
     //}
+    //childTest.setPosition(UFVec3(
+    //    UFloat("999"),
+    //    UFloat("0"),
+    //    UFloat("0")
+    //    ));
+    //childTest.setScale(99);
+
+    for (int i = 0; i <= 20; i++) {
+        ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3((i/10.0f) * pow(10, i), 0.0f, 1*pow(10,i)), 1.0f);
+        test->setScale(glm::length(uFVecToVec(test->getPosition())) * 0.1f);
+        sceneGraphBase.addChild(test);
+    }
 
     //for (ModelEntity* bp : bpEnts) {
     //    float d = 10.0f;
@@ -192,6 +192,60 @@ int main() {
     //    bp->setScale(glm::length(uFVecToVec(bp->getPosition())) * (1.0f / d));
     //}
 
+
+
+    //DEMO SETUP
+    //stars
+    EntityGrouper* innerStars = new EntityGrouper();
+    for (int i = 0; i < 100 * rand(gen) + 100; i++) {
+        EntityGrouper* system = new EntityGrouper();
+        UFloat baseMult = UFloat("9999999999");
+        system->setPosition(UFVec3(
+            UFloat::floatMult(baseMult, randn(gen)),
+            UFloat::floatMult(baseMult, randn(gen)),
+            UFloat::floatMult(baseMult, randn(gen))
+        ));
+        for (int j = 0; j < 20 * rand(gen) + 10; j++) {
+            ModelEntity* planet = new ModelEntity(&backpackModel, glm::vec3(randn(gen)*100, randn(gen)*100, randn(gen)* 100), 1.0f);
+            system->addChild(planet);
+        }
+
+        innerStars->addChild(system);
+    }
+
+    EntityGrouper* outerStars = new EntityGrouper();
+    for (int i = 0; i < 100 * rand(gen) + 100; i++) {
+        EntityGrouper* system = new EntityGrouper();
+        UFloat baseMult = UFloat("999999999999999");
+        system->setPosition(UFVec3(
+            UFloat::floatMult(baseMult, randn(gen)),
+            UFloat::floatMult(baseMult, randn(gen)),
+            UFloat::floatMult(baseMult, randn(gen))
+        ));
+        for (int j = 0; j < 20 * rand(gen) + 10; j++) {
+            ModelEntity* planet = new ModelEntity(&backpackModel, glm::vec3(randn(gen) * 100, randn(gen) * 100, randn(gen) * 100), 1.0f);
+            system->addChild(planet);
+        }
+
+        outerStars->addChild(system);
+    }
+
+    sceneGraphBase.addChild(innerStars);
+    sceneGraphBase.addChild(outerStars);
+
+    EntityGrouper* system = new EntityGrouper();
+    UFloat baseMult = UFloat("9999999999999999999");
+    system->setPosition(UFVec3(
+        UFloat::floatMult(baseMult, randn(gen)),
+        UFloat::floatMult(baseMult, randn(gen)),
+        UFloat::floatMult(baseMult, randn(gen))
+    ));
+    for (int j = 0; j < 20 * rand(gen) + 10; j++) {
+        ModelEntity* planet = new ModelEntity(&backpackModel, glm::vec3(randn(gen) * 100, randn(gen) * 100, randn(gen) * 100), 1.0f);
+        system->addChild(planet);
+    }
+
+    sceneGraphBase.addChild(system);
 
     //variables for testing
     const float radius = 10.0f;
@@ -236,7 +290,7 @@ int main() {
 
         mainCam.updateRelativeViewMatrix();
 
-        mainRenderer.renderSceneGraph(sceneGraphBase);
+        mainRenderer.renderSceneGraph(&sceneGraphBase);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

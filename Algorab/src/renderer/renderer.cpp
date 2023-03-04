@@ -2,21 +2,27 @@
 
 //float pointAngle = M_PI*(0.1f/180.0f);
 //float disappearAngle = M_PI * (0.01f / 180.0f); //TODO: Implement these differently
-float pointPix = 10;
+float pointPix = 5;
 float disPix = -1;
-float pointAngle = atan((pointPix * 2 * tan(M_PI * (0.5 * 60 / 180)))/800);
-float disappearAngle = atan((disPix * 2 * tan(M_PI * (0.5 * 60 / 180))) / 800);
+float pointAngle = atan((pointPix * 2 * tan(M_PI * (0.5 * 60 / 180)))/1200);
+float disappearAngle = atan((disPix * 2 * tan(M_PI * (0.5 * 60 / 180))) / 1200);
 //float disappearAngle = -0.1;
-float pointMinRadius = 5;
+float pointMinRadius = 3;
 
 //WINDOW IS CURRENTLY HARD SET AT 800*600, IN FUTURE USE TARGET STUFF
 
-void Renderer::renderSceneGraph(EntityGrouper baseGroup) {
+float pointsDrawn = 0;
+
+float scans = 0;
+
+void Renderer::renderSceneGraph(EntityGrouper* baseGroup) {
 
     //iterate over tree, checking if children to render
     //if find marked child, push to model ents to render
     //should integrate buckets into this
 
+    pointsDrawn = 0;
+    scans = 0;
 
     drawCalls = 0;
     clearAllBuckets();
@@ -27,7 +33,9 @@ void Renderer::renderSceneGraph(EntityGrouper baseGroup) {
     projMat = currentCamera->getProjectionMatrix();
 
     //retrieve
-    scanGroup(&baseGroup, UFVec3(0), 1.0f, false, -1);
+    UFVec3 base = UFVec3(0);
+    scanGroup(baseGroup, &base, 1.0f, false, -1);
+    std::cout << scans << std::endl;
 
     //from largest bucket to smallest
     //scale down and draw
@@ -53,10 +61,12 @@ void Renderer::renderSceneGraph(EntityGrouper baseGroup) {
         renderBucket(it->first, it->second);
     }
 
+    //std::cout << pointsDrawn << std::endl;
+
     //draw buffer texture to screen
     glBindFramebuffer(GL_READ_FRAMEBUFFER, target.getFrameBuffer());
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, 800, 600, 0, 0, 800, 600, GL_COLOR_BUFFER_BIT, GL_NEAREST); //blit to default frame buffer, resolving multisampling
+    glBlitFramebuffer(0, 0, 1200, 800, 0, 0, 1200, 800, GL_COLOR_BUFFER_BIT, GL_NEAREST); //blit to default frame buffer, resolving multisampling
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //glClearColor(0.1f, 0.5f, 0.1f, 1.0f);
@@ -135,7 +145,7 @@ void Renderer::renderSceneGraph(EntityGrouper baseGroup) {
 #endif // DEBUG    
 }
 
-void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3 curAccPos, float curMulScale, bool fullyOnScreen, int bucket) {
+void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3* curAccPos, float curMulScale, bool fullyOnScreen, int bucket) {
     //check if group has child to be rendered
     //check if group on screen
     //calculate min/max buckets
@@ -144,13 +154,13 @@ void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3 curAccPos, float curMul
     //remove all child to be rendered tags
 
     
+    scans++;
+
     bool foScreen = false;
     int bckt = -1;
 
     float curGroupScale = entGroup->getScale() * curMulScale;
-    UFVec3 currentGroupPos = uFVecSum(entGroup->getPosition(), curAccPos);
-    
-    
+    UFVec3 currentGroupPos = uFVecSum(entGroup->getPosition(), *curAccPos);   
 
     if (entGroup->getHidden()) {
         return;
@@ -188,7 +198,7 @@ void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3 curAccPos, float curMul
         //don't render
         return;
     } else if (angle < pointAngle) { //currently need to check if the group has content, right now I assume it has a model child somewhere
-        float pointRadius = (800 * tan(angle)) / (2 * tan(M_PI * (0.5 * 60 / 180)));
+        float pointRadius = (1200 * tan(angle)) / (2 * tan(M_PI * (0.5 * 60 / 180)));
         //*2 and pointMinRad considered later on
 
         float bucket = std::floor(std::log(zDist / minimumCutOff) / bucketScaleLog);
@@ -239,6 +249,7 @@ void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3 curAccPos, float curMul
 
     //CHILD MODELS
     for (ModelEntity* modEnt : *entGroup->getChildModels()) {
+        scans++;
         //std::cout << "RENDERMODENT" << std::endl;
         float modelTrueScale = modEnt->getScale() * curGroupScale;
         modEnt->relScale = modelTrueScale;
@@ -284,7 +295,7 @@ void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3 curAccPos, float curMul
 
     //CHILD GROUPS
     for (EntityGrouper* entGrp : *entGroup->getChildGroups()) {
-        scanGroup(entGrp, currentGroupPos, curGroupScale, foScreen, bckt);
+        scanGroup(entGrp, &currentGroupPos, curGroupScale, foScreen, bckt);
     }
 }
 
@@ -328,6 +339,7 @@ void Renderer::renderBucket(unsigned int bucketNum, std::pair<std::vector<ModelE
         //}
         //std::cout << std::endl;
         glDrawArrays(GL_POINTS, 0, pointData.size()/7);
+        pointsDrawn += pointData.size() / 7;
 
         texturedModelShader.use();
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -364,7 +376,7 @@ void Renderer::renderModelEntity(ModelEntity* modelEnt, float currentBucketScale
     } else if (angle < pointAngle) {
         posDiff *= currentBucketScale;
         pointData.insert(pointData.end(), { posDiff.x, posDiff.y, posDiff.z });
-        float pointRadius = (800 * tan(angle)) / (2 * tan(M_PI * (0.5 * 60 / 180)));
+        float pointRadius = (1200 * tan(angle)) / (2 * tan(M_PI * (0.5 * 60 / 180)));
         //std::cout << "POINTRADIUS: " << pointRadius << ", " << std::max(pointRadius * 2, pointMinRadius) << std::endl;
         pointData.push_back(std::max(pointRadius * 2, pointMinRadius));
         //pointData.push_back(((180*angle/M_PI)/currentCamera->getFov())*800*2); //Isn't quite correct but good approximation

@@ -13,7 +13,7 @@ Camera::Camera(glm::vec3 pos, glm::vec3 directionIndicator, bool lookAt) : posit
 	right = glm::cross(universeUp, forward); //may have to check if forward is straight up?
 	up = glm::cross(forward, right); //add roll later?
 
-	setProjectionFrustum(60, 800.0f / 600.0f, 0.1, 100, true); //TODO: Add this to constructor
+	setProjectionFrustum(60, 1200.0f / 800.0f, 0.1, 100, true); //TODO: Add this to constructor
 
 	//updateViewMatrix();
 	updateRelativeViewMatrix();

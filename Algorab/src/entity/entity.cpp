@@ -35,13 +35,16 @@ void Entity::setScale(float scl) {
 //ENTITY GROUPER
 ////////////////
 
+//TODO: When setting attribute, check if larger or smaller and call update/recalc accordingly
+
 //need to update furthest distance
 void EntityGrouper::addChild(EntityGrouper* ent) {
 	if (std::find(childGroups.begin(), childGroups.end(), ent) == childGroups.end()) {
 		childGroups.push_back(ent);
 		ent->setParent(this);
 
-		updateFurthestDistance(ent->getPosition(), ent->getFurthestDistance(), ent->getScale());
+		//updateFurthestDistance(ent->getPosition(), ent->getFurthestDistance(), ent->getScale());
+		recalcFurthestDistance();
 	}
 
 	//note this doesn't check for cyclical children, which would cause issues
@@ -51,7 +54,8 @@ void EntityGrouper::addChild(ModelEntity* ent) {
 	if (std::find(childModels.begin(), childModels.end(), ent) == childModels.end()) {
 		childModels.push_back(ent);
 
-		updateFurthestDistance(ent->getPosition(), ent->getFurVertDist(), ent->getScale());
+		//updateFurthestDistance(ent->getPosition(), ent->getFurVertDist(), ent->getScale());
+		recalcFurthestDistance();
 	}
 
 	//note this doesn't check for cyclical children, which would cause issues
@@ -63,7 +67,7 @@ void EntityGrouper::removeChild(EntityGrouper* ent) {
 		childGroups.erase(find);
 	}
 
-	updateFurthestDistance();
+	recalcFurthestDistance();
 }
 void EntityGrouper::removeChild(ModelEntity* ent) {
 	auto find = std::find(childModels.begin(), childModels.end(), ent);
@@ -71,7 +75,7 @@ void EntityGrouper::removeChild(ModelEntity* ent) {
 		childModels.erase(find);
 	}
 
-	updateFurthestDistance();
+	recalcFurthestDistance();
 }
 
 void EntityGrouper::clearChildren() {
@@ -85,16 +89,20 @@ void EntityGrouper::clearChildren() {
 	childGroups.clear();
 	childModels.clear();
 
+	recalcFurthestDistance();
+
 }
 
 bool EntityGrouper::updateFurthestDistance(UFVec3 childPos, float childFurDist, float childScale) {
-	glm::vec3 posDiff = uFVecToVec(uFVecSub(position, childPos));
-	float length = glm::length(posDiff);
+	//glm::vec3 posDiff = uFVecToVec(uFVecSub(position, childPos));
+	//float length = glm::length(posDiff);
+	float length = glm::length(uFVecToVec(childPos));
 	float potFurDist = length + childFurDist * childScale;
 	if (potFurDist > furthestDistance) {
 		furthestDistance = potFurDist;
 		if (parent) {
-			parent->updateFurthestDistance(position, furthestDistance, scale);
+			//parent->updateFurthestDistance(position, furthestDistance, scale);
+			parent->updateFurthestDistance();
 		}
 		return true;
 	} else {
@@ -127,6 +135,21 @@ float EntityGrouper::getFurthestDistance() {
 	return furthestDistance;
 }
 
+void EntityGrouper::recalcFurthestDistance() {
+	furthestDistance = 0;
+	for (EntityGrouper* eg : childGroups) {
+		updateFurthestDistance(eg->getPosition(), eg->getFurthestDistance(), eg->getScale());
+	}
+	for (ModelEntity* me : childModels) {
+		updateFurthestDistance(me->getPosition(), me->getFurVertDist(), me->getScale());
+	}
+
+	if (parent) {
+		parent->recalcFurthestDistance();
+	}
+	
+}
+
 std::vector<EntityGrouper*>* EntityGrouper::getChildGroups() {
 	return &childGroups;
 }
@@ -146,7 +169,8 @@ bool EntityGrouper::getHidden() {
 void EntityGrouper::setPosition(UFVec3 pos) {
 	position = pos;
 	if (parent) {
-		parent->updateFurthestDistance(position, furthestDistance, scale);
+		//parent->updateFurthestDistance(position, furthestDistance, scale);
+		parent->recalcFurthestDistance();
 	}
 }
 
@@ -157,7 +181,8 @@ void EntityGrouper::setPosition(glm::vec3 pos) {
 void EntityGrouper::setScale(float scl) {
 	scale = scl;
 	if (parent) {
-		parent->updateFurthestDistance(position, furthestDistance, scale);
+		//parent->updateFurthestDistance(position, furthestDistance, scale);
+		parent->recalcFurthestDistance();
 	}
 }
 
@@ -206,7 +231,8 @@ bool ModelEntity::getHidden() {
 void ModelEntity::setPosition(UFVec3 pos) {
 	position = pos;
 	if (parent) {
-		parent->updateFurthestDistance(position, getFurVertDist(), scale);
+		//parent->updateFurthestDistance(position, getFurVertDist(), scale);
+		parent->recalcFurthestDistance();
 	}
 }
 
@@ -217,7 +243,8 @@ void ModelEntity::setPosition(glm::vec3 pos) {
 void ModelEntity::setScale(float scl) {
 	scale = scl;
 	if (parent) {
-		parent->updateFurthestDistance(position, getFurVertDist(), scale);
+		//parent->updateFurthestDistance(position, getFurVertDist(), scale);
+		parent->recalcFurthestDistance();
 	}
 }
 

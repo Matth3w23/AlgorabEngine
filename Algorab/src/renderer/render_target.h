@@ -14,10 +14,10 @@ private:
 	unsigned int width;
 	unsigned int height;
 public:
-	RenderTarget(unsigned int w = 800, unsigned int h = 600);
+	RenderTarget(unsigned int w = 1200, unsigned int h = 800);
 	void setUpRenderTarget();
 
-	void setTargetDimensions(unsigned int w = 800, unsigned int h = 600);
+	void setTargetDimensions(unsigned int w = 1200, unsigned int h = 800);
 	
 	unsigned int getFrameBuffer();
 	unsigned int getTextureBuffer();

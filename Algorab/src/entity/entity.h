@@ -36,7 +36,7 @@ class EntityGrouper : public Entity {
 private:
 	std::vector<EntityGrouper*> childGroups;
 	std::vector<ModelEntity*> childModels;
-	float furthestDistance; //just a float, doesn't have to be too precise? Not scaled by scale in storage
+	float furthestDistance = 0; //just a float, doesn't have to be too precise? Not scaled by scale in storage
 	bool childrenToBeRendered = false;
 
 	EntityGrouper* parent = nullptr; //assume default (position 0, scale 1, etc.)
@@ -55,6 +55,8 @@ public:
 	bool updateFurthestDistance(UFVec3 childPos, float childFurDist, float childScale);
 	bool updateFurthestDistance();
 	float getFurthestDistance();
+
+	void recalcFurthestDistance();
 
 	std::vector<EntityGrouper*>* getChildGroups();
 	std::vector<ModelEntity*>* getChildModels();
