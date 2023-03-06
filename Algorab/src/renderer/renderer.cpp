@@ -9,7 +9,7 @@ float disappearAngle = atan((disPix * 2 * tan(M_PI * (0.5 * 60 / 180))) / 1200);
 //float disappearAngle = -0.1;
 float pointMinRadius = 3;
 
-UFVec3 currentGroupPos;
+//UFVec3 currentGroupPos;
 
 //WINDOW IS CURRENTLY HARD SET AT 800*600, IN FUTURE USE TARGET STUFF
 
@@ -38,7 +38,7 @@ void Renderer::renderSceneGraph(EntityGrouper* baseGroup) {
 
     //retrieve
     UFVec3 base = UFVec3(0);
-    scanGroup(baseGroup, &base, 1.0f, false, -1);
+    scanGroup(baseGroup, base, 1.0f, false, -1);
     std::cout << scans << std::endl;
     std::cout << "M: " << modelScans << std::endl;
 
@@ -150,7 +150,7 @@ void Renderer::renderSceneGraph(EntityGrouper* baseGroup) {
 #endif // DEBUG    
 }
 
-void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3* curAccPos, float curMulScale, bool fullyOnScreen, int bucket) {
+void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3 curAccPos, float curMulScale, bool fullyOnScreen, int bucket) {
     //check if group has child to be rendered
     //check if group on screen
     //calculate min/max buckets
@@ -165,7 +165,7 @@ void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3* curAccPos, float curMu
     int bckt = -1;
 
     float curGroupScale = entGroup->getScale() * curMulScale;
-    currentGroupPos = uFVecSum(entGroup->getPosition(), *curAccPos);   
+    UFVec3 currentGroupPos = uFVecSum(entGroup->getPosition(), curAccPos);   
 
     if (entGroup->getHidden()) {
         return;
@@ -301,7 +301,7 @@ void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3* curAccPos, float curMu
 
     //CHILD GROUPS
     for (EntityGrouper* entGrp : *entGroup->getChildGroups()) {
-        scanGroup(entGrp, &currentGroupPos, curGroupScale, foScreen, bckt);
+        scanGroup(entGrp, currentGroupPos, curGroupScale, foScreen, bckt);
     }
 }
 
