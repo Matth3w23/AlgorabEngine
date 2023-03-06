@@ -9,11 +9,14 @@ float disappearAngle = atan((disPix * 2 * tan(M_PI * (0.5 * 60 / 180))) / 1200);
 //float disappearAngle = -0.1;
 float pointMinRadius = 3;
 
+UFVec3 currentGroupPos;
+
 //WINDOW IS CURRENTLY HARD SET AT 800*600, IN FUTURE USE TARGET STUFF
 
 float pointsDrawn = 0;
 
 float scans = 0;
+float modelScans = 0;
 
 void Renderer::renderSceneGraph(EntityGrouper* baseGroup) {
 
@@ -23,6 +26,7 @@ void Renderer::renderSceneGraph(EntityGrouper* baseGroup) {
 
     pointsDrawn = 0;
     scans = 0;
+    modelScans = 0;
 
     drawCalls = 0;
     clearAllBuckets();
@@ -36,6 +40,7 @@ void Renderer::renderSceneGraph(EntityGrouper* baseGroup) {
     UFVec3 base = UFVec3(0);
     scanGroup(baseGroup, &base, 1.0f, false, -1);
     std::cout << scans << std::endl;
+    std::cout << "M: " << modelScans << std::endl;
 
     //from largest bucket to smallest
     //scale down and draw
@@ -160,7 +165,7 @@ void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3* curAccPos, float curMu
     int bckt = -1;
 
     float curGroupScale = entGroup->getScale() * curMulScale;
-    UFVec3 currentGroupPos = uFVecSum(entGroup->getPosition(), *curAccPos);   
+    currentGroupPos = uFVecSum(entGroup->getPosition(), *curAccPos);   
 
     if (entGroup->getHidden()) {
         return;
@@ -250,6 +255,7 @@ void Renderer::scanGroup(EntityGrouper* entGroup, UFVec3* curAccPos, float curMu
     //CHILD MODELS
     for (ModelEntity* modEnt : *entGroup->getChildModels()) {
         scans++;
+        modelScans++;
         //std::cout << "RENDERMODENT" << std::endl;
         float modelTrueScale = modEnt->getScale() * curGroupScale;
         modEnt->relScale = modelTrueScale;

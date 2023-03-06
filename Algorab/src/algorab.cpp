@@ -3,7 +3,8 @@
 double deltaTime;
 
 //float moveSpeed = 9999999999999999;
-double moveSpeed = 100;
+//double moveSpeed = 100;
+UFloat moveSpeed = UFloat(100);
 double moveSpeedScrollMultFactor = 1.258925411;
 
 Camera mainCam(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), false); //TODO: Change camera from being a global variable/change input functions
@@ -15,6 +16,7 @@ unsigned int windowHeight = 800;
 bool firstMouse = true;
 float mouseLastX = (float)windowWidth / 2.0f;
 float mouseLastY = (float)windowHeight / 2.0f;
+float sensitivity = 0.1f;
 
 //performance variables
 bool performanceRunning = false;
@@ -181,7 +183,8 @@ int main() {
     //childTest.setScale(99);
 
     for (int i = 0; i <= 20; i++) {
-        ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3((i/10.0f) * pow(10, i), 0.0f, 1*pow(10,i)), 1.0f);
+        //i=0 
+        ModelEntity* test = new ModelEntity(&backpackModel, glm::vec3(((i+1)/10.0f) * pow(10, i), 0.0f, 1*pow(10,i)), 1.0f);
         test->setScale(glm::length(uFVecToVec(test->getPosition())) * 0.1f);
         sceneGraphBase.addChild(test);
     }
@@ -240,7 +243,7 @@ int main() {
         UFloat::floatMult(baseMult, randn(gen)),
         UFloat::floatMult(baseMult, randn(gen))
     ));
-    for (int j = 0; j < 20 * rand(gen) + 10; j++) {
+    for (int j = 0; j < 10 * rand(gen) + 100; j++) {
         ModelEntity* planet = new ModelEntity(&backpackModel, glm::vec3(randn(gen) * 100, randn(gen) * 100, randn(gen) * 100), 1.0f);
         system->addChild(planet);
     }
@@ -318,7 +321,12 @@ int main() {
 
         ss.str(std::string());
         ss << frameString.str();
-        ss << ", MoveSpeed: " << moveSpeed << ", Pos: [" << mainCam.getPosition().x.toString() << ", " << mainCam.getPosition().y.toString() << ", " << mainCam.getPosition().z.toString() << "] ";
+        if (moveSpeed.integral.size() <= 35) {
+            ss << ", MoveSpeed: " << UFloat::uFloatToFloat(moveSpeed) << ", Pos: [" << mainCam.getPosition().x.toString() << ", " << mainCam.getPosition().y.toString() << ", " << mainCam.getPosition().z.toString() << "] ";
+        } else {
+            ss << ", MoveSpeed: " << "BIG" << ", Pos: [" << mainCam.getPosition().x.toString() << ", " << mainCam.getPosition().y.toString() << ", " << mainCam.getPosition().z.toString() << "] ";
+        }
+        
         glfwSetWindowTitle(window, ss.str().c_str());
 
 
@@ -399,7 +407,11 @@ void processInput(GLFWwindow* window) { //could use keyboard callback instead
     if (length(movement) >= 0.0f) {
         glm::normalize(movement);
     }
-    mainCam.moveRelative(movement * moveSpeed);
+    mainCam.moveRelative(UFVec3(
+        UFloat::floatMult(moveSpeed, movement.x),
+        UFloat::floatMult(moveSpeed, movement.y),
+        UFloat::floatMult(moveSpeed, movement.z)
+        ));
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -414,10 +426,10 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     mouseLastX = xpos;
     mouseLastY = ypos;
 
-    mainCam.turn(offsetX * 0.25, offsetY * 0.25, true); //TODO: Add sensitivity
+    mainCam.turn(offsetX * sensitivity, offsetY * sensitivity, true); //TODO: Add sensitivity
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-    moveSpeed *= pow(moveSpeedScrollMultFactor, yoffset);
+    moveSpeed = UFloat::floatMult(moveSpeed, pow(moveSpeedScrollMultFactor, yoffset));
     std::cout << yoffset << std::endl;
 }
